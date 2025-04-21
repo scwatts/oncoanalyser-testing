@@ -2,7 +2,9 @@ process TEAL {
     tag "${meta.id}"
     label 'process_medium'
 
-    container 'docker.io/scwatts/teal:1.3.3--0'
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/hmftools-teal:1.3.3--hdfd78af_0' :
+        'biocontainers/hmftools-teal:1.3.3--hdfd78af_0' }"
 
     input:
     tuple val(meta), path(tumor_bam), path(tumor_bai), path(normal_bam), path(normal_bai), path(tumor_metrics_dir), path(normal_metrics_dir), path(cobalt_dir), path(purple_dir)
@@ -17,6 +19,8 @@ process TEAL {
     script:
     def args = task.ext.args ?: ''
 
+    def xmx_mod = task.ext.xmx_mod ?: 0.95
+
     def tumor_arg = tumor_bam ? "-tumor ${meta.tumor_id}": ''
     def tumor_bam_arg = tumor_bam ? "-tumor_bam ${tumor_bam}": ''
     def tumor_wgs_metrics_arg = tumor_metrics_dir ? "-tumor_wgs_metrics ${tumor_metrics_dir}/${meta.tumor_id}.bam_metric.summary.tsv": ''
@@ -30,25 +34,24 @@ process TEAL {
     if (! tumor_arg && ! reference_arg) error "TEAL at least tumor or normal data for analyses"
 
     """
-    java \\
-        -Xmx${Math.round(task.memory.bytes * 0.95)} \\
-        -cp /opt/teal/teal.jar com.hartwig.hmftools.teal.TealPipelineApp \\
-            ${args} \\
-            ${reference_arg} \\
-            ${reference_bam_arg} \\
-            ${tumor_arg} \\
-            ${tumor_bam_arg} \\
-            -cobalt ${cobalt_dir} \\
-            ${purple_arg} \\
-            ${reference_wgs_metrics_arg} \\
-            ${tumor_wgs_metrics_arg} \\
-            -threads ${task.cpus} \\
-            -output_dir teal/
+    teal \\
+        -Xmx${Math.round(task.memory.bytes * xmx_mod)} \\
+        com.hartwig.hmftools.teal.TealPipelineApp \\
+        ${args} \\
+        ${reference_arg} \\
+        ${reference_bam_arg} \\
+        ${tumor_arg} \\
+        ${tumor_bam_arg} \\
+        -cobalt ${cobalt_dir} \\
+        ${purple_arg} \\
+        ${reference_wgs_metrics_arg} \\
+        ${tumor_wgs_metrics_arg} \\
+        -threads ${task.cpus} \\
+        -output_dir teal/
 
-    # NOTE(SW): hard coded since there is no reliable way to obtain version information.
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        teal: 563f6e0
+        teal: \$(teal -output_dir ./ | sed -n '/ Teal version:/ { s/^.*: //p }')
     END_VERSIONS
     """
 

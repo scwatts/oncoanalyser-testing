@@ -2,7 +2,9 @@ process CIDER {
     tag "${meta.id}"
     label 'process_medium'
 
-    container 'docker.io/scwatts/cider:1.0.3--0'
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/hmftools-cider:1.0.3--hdfd78af_0' :
+        'biocontainers/hmftools-cider:1.0.3--hdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai)
@@ -19,24 +21,25 @@ process CIDER {
     script:
     def args = task.ext.args ?: ''
 
-    """
-    java \\
-        -Xmx${Math.round(task.memory.bytes * 0.95)} \\
-        -cp /opt/cider/cider.jar com.hartwig.hmftools.cider.CiderApplication \\
-            ${args} \\
-            -sample ${meta.sample_id} \\
-            -bam ${bam} \\
-            -blast \$(which blastn | sed 's#/bin/blastn##') \\
-            -blast_db ${human_blastdb} \\
-            -ref_genome_version ${genome_ver} \\
-            -threads ${task.cpus} \\
-            -write_cider_bam \\
-            -output_dir cider/
+    def xmx_mod = task.ext.xmx_mod ?: 0.75
 
-    # NOTE(SW): hard coded since there is no reliable way to obtain version information.
+    """
+    cider \\
+        -Xmx${Math.round(task.memory.bytes * xmx_mod)} \\
+        com.hartwig.hmftools.cider.CiderApplication \\
+        ${args} \\
+        -sample ${meta.sample_id} \\
+        -bam ${bam} \\
+        -blast \$(which blastn | sed 's#/bin/blastn##') \\
+        -blast_db ${human_blastdb} \\
+        -ref_genome_version ${genome_ver} \\
+        -threads ${task.cpus} \\
+        -write_cider_bam \\
+        -output_dir cider/
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        cider: 1.0.3
+        cider: \$(cider -ref_genome_version 38 -output_dir ./ | sed -n '/ Cider version: / { s/^.*version: \([0-9.]\+\),.*\$/\1/p }')
     END_VERSIONS
     """
 

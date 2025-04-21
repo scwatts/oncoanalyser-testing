@@ -2,7 +2,9 @@ process PEACH {
     tag "${meta.id}"
     label 'process_single'
 
-    container 'docker.io/scwatts/peach:2.0--0'
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/hmftools-peach:2.0.0--hdfd78af_1' :
+        'biocontainers/hmftools-peach:2.0.0--hdfd78af_1' }"
 
     input:
     tuple val(meta), path(germline_vcf)
@@ -20,21 +22,22 @@ process PEACH {
     script:
     def args = task.ext.args ?: ''
 
+    def xmx_mod = task.ext.xmx_mod ?: 0.75
+
     """
-    java \\
-        -Xmx${Math.round(task.memory.bytes * 0.95)} \\
-        -jar /opt/peach/peach.jar \\
-            ${args} \\
-            -sample_name ${meta.sample_id} \\
-            -vcf_file ${germline_vcf} \\
-            -haplotypes_file ${haplotypes} \\
-            -function_file ${haplotype_functions} \\
-            -drugs_file ${drug_info} \\
-            -output_dir peach/
+    peach \\
+        -Xmx${Math.round(task.memory.bytes * xmx_mod)} \\
+        ${args} \\
+        -sample_name ${meta.sample_id} \\
+        -vcf_file ${germline_vcf} \\
+        -haplotypes_file ${haplotypes} \\
+        -function_file ${haplotype_functions} \\
+        -drugs_file ${drug_info} \\
+        -output_dir peach/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        peach: \$(java -jar /opt/peach/peach.jar -version | sed 's/^.* //')
+        peach: \$(peach -version | sed -n '/Peach version/ { s/^.* //p }')
     END_VERSIONS
     """
 
