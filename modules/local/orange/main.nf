@@ -24,6 +24,7 @@ process ORANGE {
         path(sigs_dir),
         path(lilac_dir),
         path(cuppa_dir),
+        path(peach_dir),
         path(isofox_dir)
     val genome_ver
     path disease_ontology
