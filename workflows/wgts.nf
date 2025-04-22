@@ -680,6 +680,8 @@ workflow WGTS {
     //
     // SUBWORKFLOW: Run PEACH to call germline haplotypes and report pharmacogenomics
     //
+    // channel: [ meta, peach_dir ]
+    ch_peach_out = Channel.empty()
     if (run_config.stages.peach) {
 
         PEACH_CALLING(
@@ -691,6 +693,12 @@ workflow WGTS {
         )
 
         ch_versions = ch_versions.mix(PEACH_CALLING.out.versions)
+
+        ch_peach_out = ch_peach_out.mix(PEACH_CALLING.out.peach_dir)
+
+    } else {
+
+        ch_peach_out = ch_inputs.map { meta -> [meta, []] }
 
     }
 
@@ -770,6 +778,7 @@ workflow WGTS {
             ch_sigs_out,
             ch_lilac_out,
             ch_cuppa_out,
+            ch_peach_out,
             ch_isofox_out,
             ref_data.genome_version,
             hmf_data.disease_ontology,
