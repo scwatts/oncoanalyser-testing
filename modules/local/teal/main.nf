@@ -48,7 +48,7 @@ process TEAL {
         ${purple_arg} \\
         ${reference_wgs_metrics_arg} \\
         ${tumor_wgs_metrics_arg} \\
-        -ref_genome ${genome_ver} \\
+        -ref_genome_version ${genome_ver} \\
         -threads ${task.cpus} \\
         -output_dir teal/
 
