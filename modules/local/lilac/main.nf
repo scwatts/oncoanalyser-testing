@@ -17,9 +17,9 @@ process LILAC {
     val sequencing_platform
 
     output:
-    tuple val(meta), path('lilac/'), emit: lilac_dir
-    path 'versions.yml'            , emit: versions
-    path '.command.*'              , emit: command_files
+    tuple val(meta), path('lilac/')                  , topic: lilac_dir
+    tuple val(meta), val('lilac'), path('.command.*'), topic: command_files
+    path 'versions.yml'                              , topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -81,6 +81,6 @@ def getSampleName(meta, tumor_bam, normal_bam) {
     } else if (normal_bam) {
         return meta.normal_id
     } else {
-        Sys.exit(1)
+        exit(1)
     }
 }

@@ -1,6 +1,3 @@
-import Constants
-import Processes
-import Utils
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -8,13 +5,14 @@ import Utils
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { AMBER_PROFILING    } from '../subworkflows/local/amber_profiling'
-include { COBALT_PROFILING   } from '../subworkflows/local/cobalt_profiling'
-include { PREPARE_REFERENCE  } from '../subworkflows/local/prepare_reference'
-include { READ_ALIGNMENT_DNA } from '../subworkflows/local/read_alignment_dna'
-include { REDUX_PROCESSING   } from '../subworkflows/local/redux_processing'
-include { SAGE_APPEND        } from '../subworkflows/local/sage_append'
-include { WISP_ANALYSIS      } from '../subworkflows/local/wisp_analysis'
+include { AMBER_PROFILING                 } from '../subworkflows/local/amber_profiling'
+include { COBALT_PROFILING                } from '../subworkflows/local/cobalt_profiling'
+include { PREPARE_REFERENCE               } from '../subworkflows/local/prepare_reference'
+include { PREPARE_OUTPUTS_PURITY_ESTIMATE } from '../subworkflows/local/prepare_outputs'
+include { READ_ALIGNMENT_DNA              } from '../subworkflows/local/read_alignment_dna'
+include { REDUX_PROCESSING                } from '../subworkflows/local/redux_processing'
+include { SAGE_APPEND                     } from '../subworkflows/local/sage_append'
+include { WISP_ANALYSIS                   } from '../subworkflows/local/wisp_analysis'
 
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 
@@ -28,15 +26,12 @@ workflow PURITY_ESTIMATE {
     take:
     inputs
     run_config
+    params
 
     main:
-    // Create channel for versions
-    // channel: [ versions.yml ]
-    ch_versions = Channel.empty()
-
     // Create input channel from parsed CSV
     // channel: [ meta ]
-    ch_inputs = Channel.fromList(inputs)
+    ch_inputs = channel.fromList(inputs)
 
     // Get run mode of purity estimate mode
     purity_estimate_run_mode = Utils.getEnumFromString(params.purity_estimate_mode, Constants.RunMode)
@@ -46,34 +41,31 @@ workflow PURITY_ESTIMATE {
     PREPARE_REFERENCE(
         prep_config,
         run_config,
+        params,
     )
     ref_data = PREPARE_REFERENCE.out
     hmf_data = PREPARE_REFERENCE.out.hmf_data
-
-    ch_versions = ch_versions.mix(PREPARE_REFERENCE.out.versions)
 
     //
     // SUBWORKFLOW: Run read alignment to generate BAMs
     //
     // channel: [ meta, [bam, ...], [bai, ...] ]
-    ch_align_dna_tumor_out = Channel.empty()
-    ch_align_dna_normal_out = Channel.empty()
-    ch_align_dna_donor_out = Channel.empty()
-    ch_align_rna_tumor_out = Channel.empty()
+    ch_align_dna_tumor_out = channel.empty()
+    ch_align_dna_normal_out = channel.empty()
+    ch_align_dna_donor_out = channel.empty()
+    ch_align_rna_tumor_out = channel.empty()
     if (run_config.stages.alignment) {
 
         READ_ALIGNMENT_DNA(
             ch_inputs,
             ref_data.genome_fasta,
             ref_data.genome_bwamem2_index,
-            params.max_fastq_records,
+            params.max_fastq_records.toInteger(),
             params.fastp_umi_enabled,
             params.fastp_umi_location,
             params.fastp_umi_length,
             params.fastp_umi_skip,
         )
-
-        ch_versions = ch_versions.mix(READ_ALIGNMENT_DNA.out.versions)
 
         ch_align_dna_tumor_out = ch_align_dna_tumor_out.mix(READ_ALIGNMENT_DNA.out.dna_tumor)
         ch_align_dna_normal_out = ch_align_dna_normal_out.mix(READ_ALIGNMENT_DNA.out.dna_normal)
@@ -91,14 +83,14 @@ workflow PURITY_ESTIMATE {
     // SUBWORKFLOW: Run REDUX for DNA BAMs
     //
     // channel: [ meta, bam, bai ]
-    ch_redux_dna_tumor_bam_out = Channel.empty()
-    ch_redux_dna_normal_bam_out = Channel.empty()
-    ch_redux_dna_donor_bam_out = Channel.empty()
+    ch_redux_dna_tumor_bam_out = channel.empty()
+    ch_redux_dna_normal_bam_out = channel.empty()
+    ch_redux_dna_donor_bam_out = channel.empty()
 
     // channel: [ meta, bqr_tsv, jitter_tsv, ms_tsv ]
-    ch_redux_dna_tumor_tsv_out = Channel.empty()
-    ch_redux_dna_normal_tsv_out = Channel.empty()
-    ch_redux_dna_donor_tsv_out = Channel.empty()
+    ch_redux_dna_tumor_tsv_out = channel.empty()
+    ch_redux_dna_normal_tsv_out = channel.empty()
+    ch_redux_dna_donor_tsv_out = channel.empty()
 
     if (run_config.stages.redux) {
 
@@ -145,10 +137,10 @@ workflow PURITY_ESTIMATE {
     // SUBWORKFLOW: Run AMBER to obtain b-allele frequencies
     //
     // channel: [ meta, amber_dir ]
-    ch_amber_out = Channel.empty()
-    if (run_config.stages.amber && purity_estimate_run_mode === Constants.RunMode.WGTS) {
+    ch_amber_out = channel.empty()
+    if (run_config.stages.amber && purity_estimate_run_mode == Constants.RunMode.WGTS) {
 
-        tumor_min_depth = purity_estimate_run_mode === Constants.RunMode.WGTS ? 1 : []
+        tumor_min_depth = purity_estimate_run_mode == Constants.RunMode.WGTS ? 1 : []
 
         AMBER_PROFILING(
             ch_inputs,
@@ -160,8 +152,6 @@ workflow PURITY_ESTIMATE {
             [],  // target_region_bed
             tumor_min_depth,
         )
-
-        ch_versions = ch_versions.mix(AMBER_PROFILING.out.versions)
 
         ch_amber_out = ch_amber_out.mix(AMBER_PROFILING.out.amber_dir)
 
@@ -175,8 +165,8 @@ workflow PURITY_ESTIMATE {
     // SUBWORKFLOW: Run COBALT to obtain read ratios
     //
     // channel: [ meta, cobalt_dir ]
-    ch_cobalt_out = Channel.empty()
-    if (run_config.stages.cobalt && purity_estimate_run_mode === Constants.RunMode.WGTS) {
+    ch_cobalt_out = channel.empty()
+    if (run_config.stages.cobalt && purity_estimate_run_mode == Constants.RunMode.WGTS) {
 
         COBALT_PROFILING(
             ch_inputs,
@@ -186,10 +176,8 @@ workflow PURITY_ESTIMATE {
             hmf_data.gc_profile,
             hmf_data.diploid_bed,
             [],  // panel_target_region_normalisation
-            purity_estimate_run_mode === Constants.RunMode.TARGETED,  // targeted_mode
+            purity_estimate_run_mode == Constants.RunMode.TARGETED,  // targeted_mode
         )
-
-        ch_versions = ch_versions.mix(COBALT_PROFILING.out.versions)
 
         ch_cobalt_out = ch_cobalt_out.mix(COBALT_PROFILING.out.cobalt_dir)
 
@@ -203,7 +191,7 @@ workflow PURITY_ESTIMATE {
     // SUBWORKFLOW: Append new sample data to primary SAGE WGS VCF
     //
     // channel: [ meta, sage_append_dir ]
-    ch_sage_somatic_append_out = Channel.empty()
+    ch_sage_somatic_append_out = channel.empty()
     if (run_config.stages.orange) {
 
         SAGE_APPEND(
@@ -218,10 +206,10 @@ workflow PURITY_ESTIMATE {
             ref_data.genome_dict,
             params.sequencing_platform,
             false,  // run_germline
-            purity_estimate_run_mode === Constants.RunMode.TARGETED,  // targeted_mode
+            purity_estimate_run_mode == Constants.RunMode.TARGETED,  // targeted_mode
+            true,  // purity_estimate_mode
         )
 
-        ch_versions = ch_versions.mix(SAGE_APPEND.out.versions)
         ch_sage_somatic_append_out = ch_sage_somatic_append_out.mix(SAGE_APPEND.out.somatic_dir)
 
     } else {
@@ -242,17 +230,20 @@ workflow PURITY_ESTIMATE {
             ch_sage_somatic_append_out,
             ref_data.genome_fasta,
             ref_data.genome_fai,
-            purity_estimate_run_mode === Constants.RunMode.TARGETED,  // targeted_mode
+            purity_estimate_run_mode,
         )
-
-        ch_versions = ch_versions.mix(WISP_ANALYSIS.out.versions)
 
     }
 
     //
+    // SUBWORKFLOW: Prepare results for publishing
+    //
+    PREPARE_OUTPUTS_PURITY_ESTIMATE()
+
+    //
     // TASK: Aggregate software versions
     //
-    def topic_versions = Channel.topic("versions")
+    def topic_versions = channel.topic('versions')
         .distinct()
         .branch { entry ->
             versions_file: entry instanceof Path
@@ -269,7 +260,7 @@ workflow PURITY_ESTIMATE {
             "${process}:\n${tool_versions.join('\n')}"
         }
 
-    softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
+    softwareVersionsToYAML(topic_versions.versions_file)
         .mix(topic_versions_string)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
@@ -277,6 +268,9 @@ workflow PURITY_ESTIMATE {
             sort: true,
             newLine: true,
         )
+
+    emit:
+    results = PREPARE_OUTPUTS_PURITY_ESTIMATE.out.results
 }
 
 /*

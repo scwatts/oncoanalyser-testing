@@ -12,9 +12,9 @@ process SIGS {
     path signatures
 
     output:
-    tuple val(meta), path('sigs/'), emit: sigs_dir
-    path 'versions.yml'           , emit: versions
-    path '.command.*'             , emit: command_files
+    tuple val(meta), path('sigs/')                  , topic: sigs_dir
+    tuple val(meta), val('sigs'), path('.command.*'), topic: command_files
+    path 'versions.yml'                             , topic: versions
 
     when:
     task.ext.when == null || task.ext.when

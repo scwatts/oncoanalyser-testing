@@ -2,10 +2,6 @@
 // ESVEE detects structural variants, and reports breakends and breakpoints.
 //
 
-import Constants
-import Utils
-
-import java.nio.channels.Channel
 
 include { ESVEE } from '../../../modules/local/esvee/main'
 
@@ -30,9 +26,6 @@ workflow ESVEE_CALLING {
     sequencing_platform      // string:  [mandatory] sequencing platform
 
     main:
-    // Channel for version.yml files
-    ch_versions = Channel.empty()
-
     // Select input sources and sort
     ch_inputs_sorted = WorkflowOncoanalyser.groupByMeta(
         ch_tumor_bam,
@@ -58,10 +51,10 @@ workflow ESVEE_CALLING {
         }
 
     // Create process input channel
-    ch_esvee_inputs = Channel.empty()
+    ch_esvee_inputs = channel.empty()
         .mix(
             ch_inputs_sorted.runnable_tn,
-            ch_inputs_sorted.runnable_to.map { [*it, [], []] },
+            ch_inputs_sorted.runnable_to.map { it + [[], []] },
         )
         .map { meta, tumor_bam, tumor_bai, normal_bam, normal_bai ->
 
@@ -96,31 +89,29 @@ workflow ESVEE_CALLING {
         sequencing_platform,
     )
 
-    ch_versions = ch_versions.mix(ESVEE.out.versions)
-
     // Set outputs, restoring original meta
     ch_esvee_dir_out = Channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(ESVEE.out.esvee_dir, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(channel.topic('esvee_dir'), ch_inputs),
             ch_inputs_sorted.skip.map { meta -> [meta, []] }
         )
 
-    ch_somatic_out = Channel.empty()
+    ch_somatic_out = channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(ESVEE.out.somatic_vcf, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(channel.topic('esvee_somatic_vcf'), ch_inputs),
             ch_inputs_sorted.skip.map { meta -> [meta, [], []] }
         )
 
-    ch_germline_out = Channel.empty()
+    ch_germline_out = channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(ESVEE.out.germline_vcf, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(channel.topic('esvee_germline_vcf'), ch_inputs),
             ch_inputs_sorted.runnable_to.map { meta, tumor_bam, tumor_bai -> [meta, [], []] },
             ch_inputs_sorted.skip.map { meta -> [meta, [], []] },
         )
 
-    ch_unfiltered_out = Channel.empty()
+    ch_unfiltered_out = channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(ESVEE.out.unfiltered_vcf, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(channel.topic('esvee_unfiltered_vcf'), ch_inputs),
             ch_inputs_sorted.skip.map { meta -> [meta, [], []] }
         )
 
@@ -129,6 +120,4 @@ workflow ESVEE_CALLING {
     somatic_vcf    = ch_somatic_out    // channel: [ meta, vcf, tbi ]
     germline_vcf   = ch_germline_out   // channel: [ meta, vcf, tbi ]
     unfiltered_vcf = ch_unfiltered_out // channel: [ meta, vcf, tbi ]
-
-    versions       = ch_versions       // channel: [ versions.yml ]
 }

@@ -2,8 +2,6 @@
 // ORANGE collates outputs of hmftools into a static PDF report
 //
 
-import Constants
-import Utils
 
 include { ORANGE } from '../../../modules/local/orange/main'
 
@@ -41,11 +39,10 @@ workflow ORANGE_REPORTING {
     // Params
     targeted_mode               // boolean: [mandatory] Set targeted mode
 
-    main:
-    // Channel for version.yml files
-    // channel: [ versions.yml ]
-    ch_versions = Channel.empty()
+    // Params
+    experiment_type             //  string: [mandatory] Experiment type for report (WGS, PANEL)
 
+    main:
     // Refer to inputs by index to avoid needing to declare each variable when calling map, branch, etc
     input_indexes = [
         'redux_somatic_plot'      : 0,
@@ -140,7 +137,7 @@ workflow ORANGE_REPORTING {
                 Utils.selectCurrentOrExisting(inputs[input_indexes.isofox]                  , meta, Constants.INPUT.ISOFOX_DIR),
             ]
 
-            return [meta, *inputs_selected]
+            return [meta] + inputs_selected
         }
 
     // Sort inputs
@@ -160,6 +157,17 @@ workflow ORANGE_REPORTING {
             skip: true
                 return meta
         }
+
+    // First set RNA reference files
+    // NOTE(SW): since the RNA reference files are provided as channels, I seem to be only able to include via channel ops
+    // channel: [ meta, tbt_metrics_dir, nbt_metrics_dir, tsage_dir, nsage_dir, tsage_append, nsage_append, purple_dir, tlinx_anno_dir, tlinx_plot_dir, nlinx_anno_dir, virusinterpreter_dir, chord_dir, sigs_dir, lilac_dir, cuppa_dir, peach_dir, isofox_dir, isofox_alt_sj, isofox_gene_distribution ]
+    ch_inputs_runnable = channel.empty()
+        .mix(
+            ch_inputs_sorted.runnable_dna.map { d -> d + [[], []] },
+            ch_inputs_sorted.runnable_dna_and_rna
+                .combine(isofox_alt_sj)
+                .combine(isofox_gene_distribution),
+        )
 
     // Create process input channel
     // channel: sample_data: [ meta, tbt_metrics_dir, nbt_metrics_dir, tsage_dir, nsage_dir, tsmlv_vcf, nsmlv_vcf, purple_dir, tlinx_anno_dir, tlinx_plot_dir, nlinx_anno_dir, virusinterpreter_dir, chord_dir, sigs_dir, lilac_dir, cuppa_dir, peach_dir, isofox_dir ]
@@ -193,7 +201,7 @@ workflow ORANGE_REPORTING {
             // SAGE append germline is only required when normal DNA is present
             def rna_tumor_input_indexes_ready
             if (has_dna_normal) {
-                rna_tumor_input_indexes_ready = [*rna_tumor_input_indexes, input_indexes.sage_germline_append]
+                rna_tumor_input_indexes_ready = rna_tumor_input_indexes + [input_indexes.sage_germline_append]
             } else {
                 rna_tumor_input_indexes_ready = rna_tumor_input_indexes.clone()
             }
@@ -234,7 +242,7 @@ workflow ORANGE_REPORTING {
 
             assert inputs_selected.size() == input_indexes.size()
 
-            return [meta_orange, *inputs_selected]
+            return meta_orange + [inputs_selected]
         }
 
     // Run process
@@ -248,9 +256,4 @@ workflow ORANGE_REPORTING {
         '3.0.0 [oncoanalyser]',
         targeted_mode,
     )
-
-    ch_versions = ch_versions.mix(ORANGE.out.versions)
-
-    emit:
-    versions = ch_versions // channel: [ versions.yml ]
 }

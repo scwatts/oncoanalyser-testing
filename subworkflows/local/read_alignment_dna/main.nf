@@ -2,8 +2,6 @@
 // Align DNA reads
 //
 
-import Constants
-import Utils
 
 include { BWAMEM2_ALIGN  } from '../../../modules/local/bwa-mem2/mem/main'
 include { FASTP          } from '../../../modules/local/fastp/main'
@@ -25,10 +23,6 @@ workflow READ_ALIGNMENT_DNA {
     umi_skip             // numeric: [optional]  fastp UMI skip argument (--umi_skip)
 
     main:
-    // Channel for version.yml files
-    // channel: [ versions.yml ]
-    ch_versions = Channel.empty()
-
     // Sort inputs, separate by tumor and normal
     // channel: [ meta ]
     ch_inputs_tumor_sorted = ch_inputs
@@ -54,7 +48,7 @@ workflow READ_ALIGNMENT_DNA {
 
     // Create FASTQ input channel
     // channel: [ meta_fastq, fastq_fwd, fastq_rev ]
-    ch_fastq_inputs = Channel.empty()
+    ch_fastq_inputs = channel.empty()
         .mix(
             ch_inputs_tumor_sorted.runnable.map { meta -> [meta, Utils.getTumorDnaSample(meta), 'tumor'] },
             ch_inputs_normal_sorted.runnable.map { meta -> [meta, Utils.getNormalDnaSample(meta), 'normal'] },
@@ -86,7 +80,7 @@ workflow READ_ALIGNMENT_DNA {
     //
     // Split FASTQ into chunks if requested for distributed processing
     // channel: [ meta_fastq_ready, fastq_fwd, fastq_fwd ]
-    ch_fastqs_ready = Channel.empty()
+    ch_fastqs_ready = channel.empty()
     if (max_fastq_records > 0 || umi_enable) {
 
         // Run process
@@ -98,14 +92,12 @@ workflow READ_ALIGNMENT_DNA {
             umi_skip,
         )
 
-        ch_versions = ch_versions.mix(FASTP.out.versions)
-
     }
 
     // Now prepare according to FASTQs splitting
     if (max_fastq_records > 0) {
 
-        ch_fastqs_ready = FASTP.out.fastq
+        ch_fastqs_ready = channel.topic('fastp_fastq')
             .flatMap { meta_fastq, reads_fwd, reads_rev ->
 
                 def data = [reads_fwd, reads_rev]
@@ -118,11 +110,7 @@ workflow READ_ALIGNMENT_DNA {
                         assert split_fwd == split_rev
 
                         // NOTE(SW): split allows meta_fastq_ready to be unique, which is required during reunite below
-                        def meta_fastq_ready = [
-                            *:meta_fastq,
-                            id: "${meta_fastq.id}_${split_fwd}",
-                            split: split_fwd,
-                        ]
+                        def meta_fastq_ready = meta_fastq + [id: "${meta_fastq.id}_${split_fwd}", split: split_fwd]
 
                         return [meta_fastq_ready, fwd, rev]
                     }
@@ -133,15 +121,12 @@ workflow READ_ALIGNMENT_DNA {
     } else {
 
         // Select appropriate source
-        ch_fastq_source = umi_enable ? FASTP.out.fastq : ch_fastq_inputs
+        ch_fastq_source = umi_enable ? channel.topic('fastp_fastq') : ch_fastq_inputs
 
         ch_fastqs_ready = ch_fastq_source
             .map { meta_fastq, fastq_fwd, fastq_rev ->
 
-                def meta_fastq_ready = [
-                    *:meta_fastq,
-                    split: null,
-                ]
+                def meta_fastq_ready = meta_fastq + [split: null]
 
                 return [meta_fastq_ready, fastq_fwd, fastq_rev]
             }
@@ -156,10 +141,7 @@ workflow READ_ALIGNMENT_DNA {
     ch_bwamem2_inputs = ch_fastqs_ready
         .map { meta_fastq_ready, fastq_fwd, fastq_rev ->
 
-            def meta_bwamem2 = [
-                *:meta_fastq_ready,
-                read_group: "${meta_fastq_ready.sample_id}.${meta_fastq_ready.library_id}.${meta_fastq_ready.lane}",
-            ]
+            def meta_bwamem2 = meta_fastq_ready + [read_group: "${meta_fastq_ready.sample_id}.${meta_fastq_ready.library_id}.${meta_fastq_ready.lane}"]
 
             return [meta_bwamem2, fastq_fwd, fastq_rev]
         }
@@ -170,8 +152,6 @@ workflow READ_ALIGNMENT_DNA {
         genome_fasta,
         genome_bwamem2_index,
     )
-
-    ch_versions = ch_versions.mix(BWAMEM2_ALIGN.out.versions)
 
     // Reunite BAMs
     // First, count expected BAMs per sample for non-blocking groupTuple op
@@ -194,16 +174,14 @@ workflow READ_ALIGNMENT_DNA {
     ch_bams_united = ch_sample_fastq_counts
         .cross(
             // First element to match meta_count above for `cross`
-            BWAMEM2_ALIGN.out.bam.map { meta_bwamem2, bam, bai -> [[key: meta_bwamem2.key, sample_type: meta_bwamem2.sample_type], bam, bai] }
+            channel.topic('bwamem2_align_bam').map { meta_bwamem2, bam, bai -> [[key: meta_bwamem2.key, sample_type: meta_bwamem2.sample_type], bam, bai] }
         )
         .map { count_tuple, bam_tuple ->
 
             def group_size = count_tuple[1]
             def (meta_bam, bam, bai) = bam_tuple
 
-            def meta_group = [
-                *:meta_bam,
-            ]
+            def meta_group = meta_bam
 
             return tuple(groupKey(meta_group, group_size), bam, bai)
         }
@@ -218,19 +196,19 @@ workflow READ_ALIGNMENT_DNA {
 
     // Set outputs, restoring original meta
     // channel: [ meta, [bam, ...], [bai, ...] ]
-    ch_bam_tumor_out = Channel.empty()
+    ch_bam_tumor_out = channel.empty()
         .mix(
             WorkflowOncoanalyser.restoreMeta(ch_bams_united.tumor, ch_inputs),
             ch_inputs_tumor_sorted.skip.map { meta -> [meta, [], []] },
         )
 
-    ch_bam_normal_out = Channel.empty()
+    ch_bam_normal_out = channel.empty()
         .mix(
             WorkflowOncoanalyser.restoreMeta(ch_bams_united.normal, ch_inputs),
             ch_inputs_normal_sorted.skip.map { meta -> [meta, [], []] },
         )
 
-    ch_bam_donor_out = Channel.empty()
+    ch_bam_donor_out = channel.empty()
         .mix(
             WorkflowOncoanalyser.restoreMeta(ch_bams_united.donor, ch_inputs),
             ch_inputs_donor_sorted.skip.map { meta -> [meta, [], []] },
@@ -240,6 +218,4 @@ workflow READ_ALIGNMENT_DNA {
     dna_tumor  = ch_bam_tumor_out  // channel: [ meta, [bam, ...], [bai, ...] ]
     dna_normal = ch_bam_normal_out // channel: [ meta, [bam, ...], [bai, ...] ]
     dna_donor  = ch_bam_donor_out  // channel: [ meta, [bam, ...], [bai, ...] ]
-
-    versions   = ch_versions       // channel: [ versions.yml ]
 }

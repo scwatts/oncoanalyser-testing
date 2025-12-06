@@ -22,6 +22,7 @@ workflow UTILS_NFSCHEMA_PLUGIN {
     before_text         // string:   text to show before the help message and parameters summary
     after_text          // string:   text to show after the help message and parameters summary
     command             // string:   an example command of the pipeline
+    params
 
     main:
 

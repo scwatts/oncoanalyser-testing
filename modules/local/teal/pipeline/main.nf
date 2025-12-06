@@ -21,9 +21,9 @@ process TEAL_PIPELINE {
     val sequencing_platform
 
     output:
-    tuple val(meta), path('teal/*.tsv*'), emit: teal_tsvs
-    path 'versions.yml'                 , emit: versions
-    path '.command.*'                   , emit: command_files
+    tuple val(meta), path('teal/*.tsv*')                     , topic: teal_tsvs
+    tuple val(meta), val('teal_pipeline'), path('.command.*'), topic: command_files
+    path 'versions.yml'                                      , topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -79,7 +79,7 @@ process TEAL_PIPELINE {
     mkdir -p teal/
 
     ${ (meta.tumor_id != null) ? "touch teal/${meta.tumor_id}.teal.{tellength.tsv,breakend.tsv.gz}" : '' }
-    ${ (meta.normal_id != null) ? "touch teal/${meta.normal_id}.teal.{tellength.tsv}" : '' }
+    ${ (meta.normal_id != null) ? "touch teal/${meta.normal_id}.teal.tellength.tsv" : '' }
 
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
     """

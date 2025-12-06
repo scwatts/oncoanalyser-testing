@@ -15,9 +15,9 @@ process LINX_SOMATIC {
     path driver_gene_panel
 
     output:
-    tuple val(meta), path('linx_somatic/'), emit: annotation_dir
-    path 'versions.yml'                   , emit: versions
-    path '.command.*'                     , emit: command_files
+    tuple val(meta), path('linx_somatic/')                  , topic: linx_somatic_annotation_dir
+    tuple val(meta), val('linx_somatic'), path('.command.*'), topic: command_files
+    path 'versions.yml'                                     , topic: versions
 
     when:
     task.ext.when == null || task.ext.when

@@ -2,8 +2,6 @@
 // Align RNA reads
 //
 
-import Constants
-import Utils
 
 include { GATK4_MARKDUPLICATES } from '../../../modules/nf-core/gatk4/markduplicates/main'
 include { SAMBAMBA_MERGE       } from '../../../modules/local/sambamba/merge/main'
@@ -19,10 +17,6 @@ workflow READ_ALIGNMENT_RNA {
     genome_star_index // channel: [mandatory] /path/to/genome_star_index/
 
     main:
-    // Channel for version.yml files
-    // channel: [ versions.yml ]
-    ch_versions = Channel.empty()
-
     // Sort inputs
     // channel: [ meta ]
     ch_inputs_sorted = ch_inputs
@@ -61,10 +55,8 @@ workflow READ_ALIGNMENT_RNA {
     // channel: [ meta_star, fastq_fwd, fastq_rev ]
     ch_star_inputs = ch_fastq_inputs
         .map { meta_fastq, fastq_fwd, fastq_rev ->
-            def meta_star = [
-                *:meta_fastq,
-                read_group: "${meta_fastq.sample_id}.${meta_fastq.library_id}.${meta_fastq.lane}",
-            ]
+
+            def meta_star = meta_fastq + [read_group: "${meta_fastq.sample_id}.${meta_fastq.library_id}.${meta_fastq.lane}"]
 
             return [meta_star, fastq_fwd, fastq_rev]
         }
@@ -75,19 +67,15 @@ workflow READ_ALIGNMENT_RNA {
         genome_star_index,
     )
 
-    ch_versions = ch_versions.mix(STAR_ALIGN.out.versions)
-
     //
     // MODULE: SAMtools sort
     //
     // Create process input channel
     // channel: [ meta_sort, bam ]
-    ch_sort_inputs = STAR_ALIGN.out.bam
+    ch_sort_inputs = channel.topic('star_align_bam')
         .map { meta_star, bam ->
-            def meta_sort = [
-                *:meta_star,
-                prefix: meta_star.read_group,
-            ]
+
+            def meta_sort = meta_star + [prefix: meta_star.read_group]
 
             return [meta_sort, bam]
         }
@@ -96,8 +84,6 @@ workflow READ_ALIGNMENT_RNA {
     SAMTOOLS_SORT(
         ch_sort_inputs,
     )
-
-    ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions)
 
     //
     // MODULE: Sambamba merge
@@ -118,16 +104,14 @@ workflow READ_ALIGNMENT_RNA {
     ch_bams_united = ch_sample_fastq_counts
         .cross(
             // First element to match meta_count above for `cross`
-            SAMTOOLS_SORT.out.bam.map { meta_star, bam -> [[key: meta_star.key], bam] }
+            channel.topic('samtools_sort_bam').map { meta_star, bam -> [[key: meta_star.key], bam] }
         )
         .map { count_tuple, bam_tuple ->
 
             def group_size = count_tuple[1]
             def (meta_bam, bam) = bam_tuple
 
-            def meta_group = [
-                *:meta_bam,
-            ]
+            def meta_group = meta_bam
 
             return tuple(groupKey(meta_group, group_size), bam)
         }
@@ -160,16 +144,14 @@ workflow READ_ALIGNMENT_RNA {
         ch_merge_inputs,
     )
 
-    ch_versions = ch_versions.mix(SAMBAMBA_MERGE.out.versions)
-
     //
     // MODULE: GATK4 markduplicates
     //
     // Create process input channel
     // channel: [ meta_markdups, bam ]
-    ch_markdups_inputs = Channel.empty()
+    ch_markdups_inputs = channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(SAMBAMBA_MERGE.out.bam, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(channel.topic('sambamba_merge_bam'), ch_inputs),
             WorkflowOncoanalyser.restoreMeta(ch_bams_united_sorted.skip, ch_inputs),
         )
         .map { meta, bam ->
@@ -188,25 +170,21 @@ workflow READ_ALIGNMENT_RNA {
         [],
     )
 
-    ch_versions = ch_versions.mix(GATK4_MARKDUPLICATES.out.versions)
-
     // Combine BAMs and BAIs
     // channel: [ meta, bam, bai ]
     ch_bams_ready = WorkflowOncoanalyser.groupByMeta(
-        WorkflowOncoanalyser.restoreMeta(GATK4_MARKDUPLICATES.out.bam, ch_inputs),
-        WorkflowOncoanalyser.restoreMeta(GATK4_MARKDUPLICATES.out.bai, ch_inputs),
+        WorkflowOncoanalyser.restoreMeta(channel.topic('gatk4_markduplicates_bam'), ch_inputs),
+        WorkflowOncoanalyser.restoreMeta(channel.topic('gatk4_markduplicates_bai'), ch_inputs),
     )
 
     // Set outputs
     // channel: [ meta, bam, bai ]
-    ch_bam_out = Channel.empty()
+    ch_bam_out = channel.empty()
         .mix(
             ch_bams_ready,
             ch_inputs_sorted.skip.map { meta -> [meta, [], []] },
         )
 
     emit:
-    rna_tumor = ch_bam_out  // channel: [ meta, bam, bai ]
-
-    versions  = ch_versions // channel: [ versions.yml ]
+    rna_tumor = ch_bam_out // channel: [ meta, bam, bai ]
 }

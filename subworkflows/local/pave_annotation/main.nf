@@ -2,8 +2,6 @@
 // PAVE annotates somatic and germline variant VCFs with gene and transcript coding and protein effects
 //
 
-import Constants
-import Utils
 
 include { PAVE_GERMLINE } from '../../../modules/local/pave/germline/main'
 include { PAVE_SOMATIC  } from '../../../modules/local/pave/somatic/main'
@@ -33,9 +31,6 @@ workflow PAVE_ANNOTATION {
     sequencing_platform    // string:  [mandatory] sequencing platform
 
     main:
-    // Channel for version.yml files
-    ch_versions = Channel.empty()
-
     //
     // MODULE: PAVE germline
     //
@@ -87,8 +82,6 @@ workflow PAVE_ANNOTATION {
         ensembl_data_resources,
         sequencing_platform,
     )
-
-    ch_versions = ch_versions.mix(PAVE_GERMLINE.out.versions)
 
     //
     // MODULE: PAVE somatic
@@ -143,25 +136,21 @@ workflow PAVE_ANNOTATION {
         sequencing_platform,
     )
 
-    ch_versions = ch_versions.mix(PAVE_SOMATIC.out.versions)
-
     // Set outputs, restoring original meta
     // channel: [ meta, pave_vcf ]
-    ch_somatic_out = Channel.empty()
+    ch_somatic_out = channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(PAVE_SOMATIC.out.vcf, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(channel.topic('pave_somatic_vcf'), ch_inputs),
             ch_sage_somatic_inputs_sorted.skip.map { meta -> [meta, []] },
         )
 
-    ch_germline_out = Channel.empty()
+    ch_germline_out = channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(PAVE_GERMLINE.out.vcf, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(channel.topic('pave_germline_vcf'), ch_inputs),
             ch_sage_germline_inputs_sorted.skip.map { meta -> [meta, []] },
         )
 
     emit:
     germline = ch_germline_out // channel: [ meta, pave_vcf ]
     somatic  = ch_somatic_out  // channel: [ meta, pave_vcf ]
-
-    versions = ch_versions     // channel: [ versions.yml ]
 }

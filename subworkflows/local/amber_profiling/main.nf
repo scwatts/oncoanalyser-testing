@@ -2,8 +2,6 @@
 // AMBER determines b-allele frequencies at predetermined positions
 //
 
-import Constants
-import Utils
 
 include { AMBER } from '../../../modules/local/amber/main'
 
@@ -22,10 +20,6 @@ workflow AMBER_PROFILING {
     tumor_min_depth    // integer: [optional]  -tumor_min_depth argument value
 
     main:
-    // Channel for version.yml files
-    // channel: [ versions.yml ]
-    ch_versions = Channel.empty()
-
     // Select input sources and sort
     // channel: runnable: [ meta, tumor_bam, tumor_bai, normal_bam, normal_bai]
     // channel: skip: [ meta ]
@@ -92,18 +86,14 @@ workflow AMBER_PROFILING {
         tumor_min_depth,
     )
 
-    ch_versions = ch_versions.mix(AMBER.out.versions)
-
     // Set outputs, restoring original meta
     // channel: [ meta, amber_dir ]
-    ch_outputs = Channel.empty()
+    ch_outputs = channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(AMBER.out.amber_dir, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(channel.topic('amber_dir'), ch_inputs),
             ch_inputs_sorted.skip.map { meta -> [meta, []] },
         )
 
     emit:
-    amber_dir = ch_outputs  // channel: [ meta, amber_dir ]
-
-    versions  = ch_versions // channel: [ versions.yml ]
+    amber_dir = ch_outputs // channel: [ meta, amber_dir ]
 }

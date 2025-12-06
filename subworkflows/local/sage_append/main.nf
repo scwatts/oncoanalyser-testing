@@ -1,9 +1,7 @@
 //
-// SAGE append adds additional sample data to an existing SAGE VCF
+// SAGE germlineappend adds additional sample data to an existing SAGE VCF
 //
 
-import Constants
-import Utils
 
 include { SAGE_APPEND as SAGE_APPEND_SOMATIC  } from '../../../modules/local/sage/append/main'
 include { SAGE_APPEND as SAGE_APPEND_GERMLINE } from '../../../modules/local/sage/append/main'
@@ -29,13 +27,6 @@ workflow SAGE_APPEND {
     targeted_mode       // boolean: [mandatory] Set targeted mode
 
     main:
-    // Channel for version.yml files
-    // channel: [ versions.yml ]
-    ch_versions = Channel.empty()
-
-    def run_mode = Utils.getEnumFromString(params.mode, Constants.RunMode)
-    def purity_estimate_mode = run_mode === Constants.RunMode.PURITY_ESTIMATE
-
     // Select input sources and sort
     // channel: runnable: [ meta, tumor_dna_bam, tumor_dna_bai, [tumor_dna_redux_tsv, ...], tumor_rna_bam, tumor_rna_bai, purple_dir ]
     // channel: skip: [ meta ]
@@ -111,6 +102,7 @@ workflow SAGE_APPEND {
 
             def meta_append = [
                 key: meta.group_id,
+                topic_key: 'germline',
                 id: meta.group_id,
                 output_file_id: output_file_id,
                 reference_ids: [Utils.getTumorRnaSampleName(meta)],
@@ -134,8 +126,6 @@ workflow SAGE_APPEND {
         sequencing_platform,
         targeted_mode,
     )
-
-    ch_versions = ch_versions.mix(SAGE_APPEND_GERMLINE.out.versions)
 
     //
     // MODULE: SAGE append somatic
@@ -172,6 +162,7 @@ workflow SAGE_APPEND {
 
             def meta_append = [
                 key: meta.group_id,
+                topic_key: 'somatic',
                 id: meta.group_id,
                 output_file_id: output_file_id,
                 reference_ids: [],
@@ -210,20 +201,20 @@ workflow SAGE_APPEND {
         targeted_mode,
     )
 
-    ch_versions = ch_versions.mix(SAGE_APPEND_SOMATIC.out.versions)
-
     // Set outputs, restoring original meta
     // channel: [ meta, sage_append_dir ]
-    ch_somatic_dir = Channel.empty()
+    ch_somatic_out = channel.topic('sage_append_dir').filter { it[0].topic_key == 'somatic' }
+    ch_somatic_dir = channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(SAGE_APPEND_SOMATIC.out.sage_append_dir, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(ch_somatic_out, ch_inputs),
             ch_inputs_somatic_sorted.skip.map { meta -> [meta, []] },
             ch_inputs_sorted.skip.map { meta -> [meta, []] },
         )
 
-    ch_germline_dir = Channel.empty()
+    ch_germline_out = channel.topic('sage_append_dir').filter { it[0].topic_key == 'germline' }
+    ch_germline_dir = channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(SAGE_APPEND_GERMLINE.out.sage_append_dir, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(ch_germline_out, ch_inputs),
             ch_inputs_germline_sorted.skip.map { meta -> [meta, []] },
             ch_inputs_sorted.skip.map { meta -> [meta, []] },
         )
@@ -231,6 +222,4 @@ workflow SAGE_APPEND {
     emit:
     somatic_dir  = ch_somatic_dir  // channel: [ meta, sage_append_dir ]
     germline_dir = ch_germline_dir // channel: [ meta, sage_append_dir ]
-
-    versions     = ch_versions     // channel: [ versions.yml ]
 }

@@ -100,15 +100,14 @@
                     "fa_icon": "fas fa-diagram-project"
                 },
                 "create_stub_placeholders": {
-                    "type": "boolean",
+                    "type": "string",
                     "description": "Create placeholders for reference data during stub run.",
-                    "default": false,
                     "fa_icon": "fas fa-diagram-project"
                 },
                 "max_fastq_records": {
-                    "type": "integer",
+                    "type": "string",
                     "description": "When positive, will use fastp to split fastq files so that each resultant fastq file has no more than max_fastq_records records. When nonpositive, fastp is not used and the provided fastq files are passed as-is to the aligner.",
-                    "default": 10000000,
+                    "default": "10000000",
                     "fa_icon": "fas fa-cog"
                 },
                 "fastp_umi_enabled": {

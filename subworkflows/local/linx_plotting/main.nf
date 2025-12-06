@@ -2,8 +2,6 @@
 // LINX plotting visualises clusters structural variants
 //
 
-import Constants
-import Utils
 
 include { LINXREPORT      } from '../../../modules/local/linxreport/main'
 include { LINX_VISUALISER } from '../../../modules/local/linx/visualiser/main'
@@ -24,10 +22,6 @@ workflow LINX_PLOTTING {
     ensembl_data_resources // channel: [mandatory] /path/to/ensembl_data_resources/
 
     main:
-    // Channel for versions.yml files
-    // channel: [ versions.yml ]
-    ch_versions = Channel.empty()
-
     // Select input sources and sort
     // channel: runnable: [ meta, annotation_dir, amber_dir, cobalt_dir, purple_dir ]
     // channel: skip: [ meta ]
@@ -81,8 +75,6 @@ workflow LINX_PLOTTING {
         ensembl_data_resources,
     )
 
-    ch_versions = ch_versions.mix(LINX_VISUALISER.out.versions)
-
     //
     // MODULE: gpgr LINX report
     //
@@ -90,7 +82,7 @@ workflow LINX_PLOTTING {
     // channel: [ meta_gpgr, annotation_dir, visualiser_dir ]
     ch_gpgr_linx_inputs = WorkflowOncoanalyser.groupByMeta(
         ch_inputs_sorted.runnable,
-        WorkflowOncoanalyser.restoreMeta(LINX_VISUALISER.out.plots, ch_inputs),
+        WorkflowOncoanalyser.restoreMeta(channel.topic('linx_visualiser_plots'), ch_inputs),
     )
         .map { meta, annotation_dir, amber_dir, cobalt_dir, purple_dir, visualiser_dir ->
 
@@ -108,18 +100,14 @@ workflow LINX_PLOTTING {
         ch_gpgr_linx_inputs,
     )
 
-    ch_versions = ch_versions.mix(LINXREPORT.out.versions)
-
     // Set outputs, restoring original meta
     // channel: [ meta, visualiser_dir ]
-    ch_visualiser_dir_out = Channel.empty()
+    ch_visualiser_dir_out = channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(LINX_VISUALISER.out.plots, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(channel.topic('linx_visualiser_plots'), ch_inputs),
             ch_inputs_sorted.skip.map { meta -> [meta, []] },
         )
 
     emit:
     visualiser_dir = ch_visualiser_dir_out // channel: [ meta, visualiser_dir ]
-
-    versions       = ch_versions           // channel: [ versions.yml ]
 }

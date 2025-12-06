@@ -2,8 +2,6 @@
 // LILAC is a WGS tool for HLA typing and somatic CNV and SNV calling
 //
 
-import Constants
-import Utils
 
 include { LILAC } from '../../../modules/local/lilac/main'
 
@@ -27,10 +25,6 @@ workflow LILAC_CALLING {
     sequencing_platform // string:  [mandatory] sequencing platform
 
     main:
-    // Channel for version.yml files
-    // channel: [ versions.yml ]
-    ch_versions = Channel.empty()
-
     // Select input sources and sort for DNA BAMs
     // channel: runnable: [ meta, tumor_dna_bam, tumor_dna_bai, normal_dna_bam, normal_dna_bai ]
     // channel: skip: [ meta ]
@@ -104,18 +98,14 @@ workflow LILAC_CALLING {
         sequencing_platform,
     )
 
-    ch_versions = ch_versions.mix(LILAC.out.versions)
-
     // Set outputs, restoring original meta
     // channel: [ meta, amber_dir ]
-    ch_outputs = Channel.empty()
+    ch_outputs = channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(LILAC.out.lilac_dir, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(channel.topic('lilac_dir'), ch_inputs),
             ch_dna_inputs_sorted.skip.map { meta -> [meta, []] },
         )
 
     emit:
-    lilac_dir = ch_outputs  // channel: [ meta, lilac_dir ]
-
-    versions  = ch_versions // channel: [ versions.yml ]
+    lilac_dir = ch_outputs // channel: [ meta, lilac_dir ]
 }

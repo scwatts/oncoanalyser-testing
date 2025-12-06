@@ -2,8 +2,6 @@
 // Apply post-alignment processing
 //
 
-import Constants
-import Utils
 
 include { REDUX } from '../../../modules/local/redux/main'
 
@@ -30,10 +28,6 @@ workflow REDUX_PROCESSING {
     targeted_mode       // boolean: [mandatory] Set targeted mode
 
     main:
-    // Channel for version.yml files
-    // channel: [ versions.yml ]
-    ch_versions = Channel.empty()
-
     // Select and sort input sources, separating bytumor and normal
     // channel: runnable: [ meta, [bam, ...], [bai, ...] ]
     // channel: skip: [ meta ]
@@ -82,7 +76,7 @@ workflow REDUX_PROCESSING {
 
     // Create process input channel
     // channel: [ meta_redux, [bam, ...], [bai, ...] ]
-    ch_redux_inputs = Channel.empty()
+    ch_redux_inputs = channel.empty()
         .mix(
             ch_inputs_tumor.runnable.map { meta, bams, bais -> [meta, Utils.getTumorDnaSample(meta), 'tumor', bams, bais] },
             ch_inputs_normal.runnable.map { meta, bams, bais -> [meta, Utils.getNormalDnaSample(meta), 'normal', bams, bais] },
@@ -117,17 +111,15 @@ workflow REDUX_PROCESSING {
         targeted_mode,
     )
 
-    ch_versions = ch_versions.mix(REDUX.out.versions)
-
     // Combine TSV outputs into single channel for processing
     // channel: [ meta, bam, bai, bqr_tsv, jitter_tsv, ms_tsv, bqr_plot ]
     ch_redux_out = WorkflowOncoanalyser.groupByMeta(
-        REDUX.out.bam,
-        REDUX.out.bqr_tsv,
-        REDUX.out.dup_freq_tsv,
-        REDUX.out.jitter_tsv,
-        REDUX.out.ms_tsv,
-        REDUX.out.bqr_plot,
+        channel.topic('redux_bam'),
+        channel.topic('redux_bqr_tsv'),
+        channel.topic('redux_dup_freq_tsv'),
+        channel.topic('redux_jitter_tsv'),
+        channel.topic('redux_ms_tsv'),
+        channel.topic('redux_bqr_plot'),
     )
 
     // Sort into a tumor and normal channel

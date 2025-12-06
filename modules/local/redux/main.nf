@@ -32,8 +32,8 @@ process REDUX {
     tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.jitter_params.tsv") , emit: jitter_tsv
     tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.ms_table.tsv.gz")   , emit: ms_tsv
 
-    path 'versions.yml', emit: versions
-    path '.command.*'  , emit: command_files
+    tuple val(meta), val('redux'), path('.command.*')            , topic: command_files
+    path 'versions.yml'                                          , topic: versions
 
     when:
     task.ext.when == null || task.ext.when

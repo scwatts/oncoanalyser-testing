@@ -2,8 +2,6 @@
 // PURPLE is a CNV caller that infers purity/ploidy and recovers low-confidence SVs
 //
 
-import Constants
-import Utils
 
 include { PURPLE } from '../../../modules/local/purple/main'
 
@@ -34,10 +32,6 @@ workflow PURPLE_CALLING {
     target_region_msi_indels     // channel: [optional]  /path/to/target_region_msi_indels
 
     main:
-    // Channel for version.yml files
-    // channel: [ versions.yml ]
-    ch_versions = Channel.empty()
-
     // Select input sources
     // channel: [ meta, amber_dir, cobalt_dir, sv_somatic_vcf, sv_somatic_tbi, sv_germline_vcf, sv_germline_tbi, smlv_somatic_vcf, smlv_germline_vcf ]
     ch_inputs_selected = WorkflowOncoanalyser.groupByMeta(
@@ -65,7 +59,7 @@ workflow PURPLE_CALLING {
                 Utils.selectCurrentOrExisting(d[8], meta, Constants.INPUT.PAVE_VCF_NORMAL),
             ]
 
-            return [meta, *inputs]
+            return [meta] + inputs
         }
 
     // Sort inputs
@@ -102,7 +96,7 @@ workflow PURPLE_CALLING {
                 meta_purple.normal_id = Utils.getNormalDnaSampleName(meta)
             }
 
-            return [meta_purple, *inputs]
+            return [meta_purple] + inputs
 
         }
 
@@ -124,18 +118,14 @@ workflow PURPLE_CALLING {
         target_region_msi_indels,
     )
 
-    ch_versions = ch_versions.mix(PURPLE.out.versions)
-
     // Set outputs, restoring original meta
     // channel: [ meta, purple_dir ]
-    ch_outputs = Channel.empty()
+    ch_outputs = channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(PURPLE.out.purple_dir, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(channel.topic('purple_dir'), ch_inputs),
             ch_inputs_sorted.skip.map { meta -> [meta, []] },
         )
 
     emit:
-    purple_dir = ch_outputs  // channel: [ meta, purple_dir ]
-
-    versions   = ch_versions // channel: [ versions.yml ]
+    purple_dir = ch_outputs // channel: [ meta, purple_dir ]
 }

@@ -226,7 +226,7 @@ def getSingleReport(multiqc_reports) {
 //
 // Construct and send completion email
 //
-def completionEmail(summary_params, email, email_on_fail, plaintext_email, outdir, monochrome_logs=true, multiqc_report=null) {
+def completionEmail(summary_params, email, email_on_fail, plaintext_email, outdir, params, monochrome_logs=true, multiqc_report=null) {
 
     // Set up the e-mail variables
     def subject = "[${workflow.manifest.name}] Successful: ${workflow.runName}"

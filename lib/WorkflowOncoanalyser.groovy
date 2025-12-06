@@ -7,10 +7,6 @@ import static groovy.io.FileType.FILES
 import nextflow.Channel
 import nextflow.Nextflow
 
-import Constants
-import Processes
-import Utils
-
 class WorkflowOncoanalyser {
 
     public static groupByMeta(Map named_args, ... channels) {
@@ -30,7 +26,7 @@ class WorkflowOncoanalyser {
                 return d
             }
 
-        r = Channel.empty().mix(*r)
+        r = nextflow.Channel.empty().mix(*r)
 
         // NOTE(SW): As of Nextflow 22.10.6, groupTuple requires a matching meta /and/ an additional element to complete without error, these placeholders are filtered in the groupByMeta function
         r = r.filter { it[0] != Constants.PLACEHOLDER_META }
@@ -44,7 +40,7 @@ class WorkflowOncoanalyser {
                 def values_list = values_map
                     .sort(false) { it.position }
                     .collect { it.values }
-                return [meta, *values_list]
+                return [meta] + values_list
             }
 
         if (named_args.getOrDefault('flatten', true)) {
@@ -55,7 +51,7 @@ class WorkflowOncoanalyser {
                 r = r.map { data ->
                     def meta = data[0]
                     def inputs = data[1..-1].collectMany { it }
-                    return [meta, *inputs]
+                    return [meta] + inputs
                 }
             } else {
                 System.err.println "ERROR: got bad flatten_mode: ${flatten_mode}"
@@ -109,7 +105,7 @@ class WorkflowOncoanalyser {
             .map { b, a ->
                 def (ka, values) = a
                 def (kb, meta) = b
-                return [meta, *values]
+                return [meta] + values
             }
     }
 

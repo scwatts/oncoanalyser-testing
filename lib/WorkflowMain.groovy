@@ -59,7 +59,7 @@ class WorkflowMain {
         // Set defaults specific to run configuration without attempting to validate
 
         def run_mode
-        if (params.mode !== null) {
+        if (params.mode != null) {
             run_mode = Utils.getRunMode(params.mode, log)
         } else {
             // Bad configuration, catch in validateParams
@@ -67,7 +67,7 @@ class WorkflowMain {
         }
 
         // Attempt to set default panel data path; make no assumption on valid 'panel' value
-        if (run_mode === Constants.RunMode.TARGETED || run_mode === Constants.RunMode.PREPARE_REFERENCE) {
+        if (run_mode == Constants.RunMode.TARGETED || run_mode == Constants.RunMode.PREPARE_REFERENCE) {
 
             if (params.containsKey('panel')) {
 
@@ -84,7 +84,7 @@ class WorkflowMain {
         }
 
 
-        if (run_mode === Constants.RunMode.TARGETED) {
+        if (run_mode == Constants.RunMode.TARGETED) {
 
             // When fastp UMI is enabled, REDUX UMI should be as well
             if (params.fastp_umi_enabled && (!params.containsKey('redux_umi_enabled') || !params.redux_umi_enabled)) {
@@ -199,7 +199,7 @@ class WorkflowMain {
 
         def run_mode = Utils.getRunMode(params.mode, log)
 
-        if (run_mode === Constants.RunMode.PREPARE_REFERENCE && params.ref_data_types == null) {
+        if (run_mode == Constants.RunMode.PREPARE_REFERENCE && params.ref_data_types == null) {
 
             def ref_data_types = Utils.getEnumNames(Constants.RefDataType).join('\n    - ')
 
@@ -211,9 +211,9 @@ class WorkflowMain {
             Nextflow.exit(1)
         }
 
-        if (run_mode === Constants.RunMode.TARGETED) {
+        if (run_mode == Constants.RunMode.TARGETED) {
 
-            if (!params.containsKey('panel') || params.panel === null) {
+            if (!params.containsKey('panel') || params.panel == null) {
 
                 def panels = Constants.PANELS_DEFINED.join('\n    - ')
                 log.error "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
@@ -242,7 +242,7 @@ class WorkflowMain {
             }
         }
 
-        if (run_mode === Constants.RunMode.PURITY_ESTIMATE) {
+        if (run_mode == Constants.RunMode.PURITY_ESTIMATE) {
 
             def purity_estimate_modes = [Constants.RunMode.WGTS, Constants.RunMode.TARGETED]
 
@@ -266,7 +266,7 @@ class WorkflowMain {
             }
         }
 
-        if (params.ref_data_genome_alt !== null) {
+        if (params.ref_data_genome_alt != null) {
             if (params.genome_type != 'alt') {
                 log.error "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
                     "  Using a reference genome without ALT contigs but found an .alt file\n" +
@@ -307,7 +307,7 @@ class WorkflowMain {
             Nextflow.exit(1)
         }
 
-        if (params.redux_umi_duplex_delim && params.redux_umi_enabled === false) {
+        if (params.redux_umi_duplex_delim && params.redux_umi_enabled == false) {
             log.error "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
                 "  Detected use of REDUX UMI parameters but REDUX UMI processing has not been\n" +
                 "  enabled. Please review your configuration and set the redux_umi_enabled flag or\n" +
@@ -351,9 +351,9 @@ class WorkflowMain {
             require_bwamem2_index: run_config.has_dna_fastq && run_config.stages.alignment,
             require_star_index: run_config.has_rna_fastq && run_config.stages.alignment,
 
-            require_gridss_index: run_config.has_dna && run_config.mode === Constants.RunMode.WGTS && run_config.stages.virusinterpreter,
+            require_gridss_index: run_config.has_dna && run_config.mode == Constants.RunMode.WGTS && run_config.stages.virusinterpreter,
             require_hmftools_data: true,
-            require_panel_data: run_config.mode === Constants.RunMode.TARGETED,
+            require_panel_data: run_config.mode == Constants.RunMode.TARGETED,
         ]
     }
 

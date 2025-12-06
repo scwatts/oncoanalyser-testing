@@ -19,9 +19,9 @@ process WISP {
     val targeted_mode
 
     output:
-    path 'wisp/'       , emit: wisp_dir
-    path 'versions.yml', emit: versions
-    path '.command.*'  , emit: command_files
+    tuple val(meta), path('wisp/')                  , topic: wisp_dir
+    tuple val(meta), val('wisp'), path('.command.*'), topic: command_files
+    path 'versions.yml'                             , topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -55,8 +55,8 @@ process WISP {
     # Put AMBER outputs from all samples into the same dir
     if [[ -n "${amber_dir_arg}" ]]; then
         mkdir -p amber_dir__prepared/;
-        for fp in ${primary_amber_dir}/*.amber.*; do ln -sf ../\$fp amber_dir__prepared/; done
-        for fp in ${sample_amber_dir}/*.amber.*;  do ln -sf ../\$fp amber_dir__prepared/; done
+        for fp in primary_amber_dir/*.amber.*; do ln -sf ../\$fp amber_dir__prepared/; done
+        for fp in sample_amber_dir/*.amber.*;  do ln -sf ../\$fp amber_dir__prepared/; done
     fi;
 
     # Run WISP

@@ -81,7 +81,7 @@ class Utils {
                                     Nextflow.exit(1)
                                 }
 
-                                if (!v && info_field_enum !== Constants.InfoField.LONGITUDINAL_SAMPLE) {
+                                if (!v && info_field_enum != Constants.InfoField.LONGITUDINAL_SAMPLE) {
                                     log.error "got empty value for ${group_id} ${sample_type_enum}/${sequence_type_enum} ${info_field_enum}"
                                     Nextflow.exit(1)
                                 }
@@ -123,7 +123,7 @@ class Utils {
                     }
 
                     // Handle inputs appropriately
-                    if (filetype_enum === Constants.FileType.FASTQ) {
+                    if (filetype_enum == Constants.FileType.FASTQ) {
 
                         if (!info_data.containsKey(Constants.InfoField.LIBRARY_ID)) {
                             log.error "missing 'library_id' info field for ${group_id} ${sample_type_enum}/${sequence_type_enum}"
@@ -177,16 +177,16 @@ class Utils {
                         def index_enum
                         def index_str
 
-                        if (key === Constants.FileType.BAM || key === Constants.FileType.BAM_REDUX) {
+                        if (key == Constants.FileType.BAM || key == Constants.FileType.BAM_REDUX) {
                             index_enum = Constants.FileType.BAI
                             index_str = 'bai'
-                        } else if (key === Constants.FileType.CRAM || key === Constants.FileType.CRAM_REDUX) {
+                        } else if (key == Constants.FileType.CRAM || key == Constants.FileType.CRAM_REDUX) {
                             index_enum = Constants.FileType.CRAI
                             index_str = 'crai'
-                        } else if (key === Constants.FileType.ESVEE_VCF) {
+                        } else if (key == Constants.FileType.ESVEE_VCF) {
                             index_enum = Constants.FileType.ESVEE_VCF_TBI
                             index_str = 'tbi'
-                        } else if (key === Constants.FileType.SAGE_VCF) {
+                        } else if (key == Constants.FileType.SAGE_VCF) {
                             index_enum = Constants.FileType.SAGE_VCF_TBI
                             index_str = 'tbi'
                         } else {
@@ -326,7 +326,7 @@ class Utils {
                 fps << "${params.ref_data_hmf_data_path.replaceAll('/$', '')}/${v}"
             }
 
-        if (params.panel !== null) {
+        if (params.panel != null) {
             params.panel_data_paths[params.panel][params.genome_version.toString()]
                 .each { k, v ->
                     fps << "${params.ref_data_panel_data_path.replaceAll('/$', '')}/${v}"
@@ -334,7 +334,7 @@ class Utils {
         }
 
         fps.each { fp_str ->
-            if (fp_str === null) {
+            if (fp_str == null) {
                 return
             }
 
@@ -397,7 +397,7 @@ class Utils {
             }
 
             // Apply some required restrictions to targeted mode
-            if (run_config.mode === Constants.RunMode.TARGETED) {
+            if (run_config.mode == Constants.RunMode.TARGETED) {
 
                 // Do not allow donor DNA
                 if (Utils.hasDonorDna(meta)) {
@@ -431,7 +431,7 @@ class Utils {
             // Enforce unique samples names within groups
             def sample_ids_duplicated = sample_keys
                 .groupBy { meta.getOrDefault(it, [:]).getOrDefault('sample_id', null) }
-                .findResults { k, v -> k !== null & v.size() > 1 ? [k, v] : null }
+                .findResults { k, v -> k != null & v.size() > 1 ? [k, v] : null }
 
             if (sample_ids_duplicated) {
                 def duplicate_message_strs = sample_ids_duplicated.collect { sample_id, keys ->
@@ -484,7 +484,7 @@ class Utils {
         }
 
         // Require --isofox_gene_ids argument to be provided in PANEL_RESOURCE_CREATION when RNA inputs are present
-        if (run_config.mode === Constants.RunMode.PANEL_RESOURCE_CREATION && run_config.has_rna && !params.isofox_gene_ids) {
+        if (run_config.mode == Constants.RunMode.PANEL_RESOURCE_CREATION && run_config.has_rna && !params.isofox_gene_ids) {
             log.error "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
                 "  Running the panel resource creation workflow with RNA requires that the\n" +
                 "  --isofox_gene_ids argument is set with an appropriate input file.\n" +
@@ -592,15 +592,15 @@ class Utils {
 
 
     static public hasTumorDnaFastq(meta) {
-        return getTumorDnaFastq(meta) !== null
+        return getTumorDnaFastq(meta) != null
     }
 
     static public hasTumorDnaBam(meta) {
-        return getTumorDnaBam(meta) !== null
+        return getTumorDnaBam(meta) != null
     }
 
     static public hasTumorDnaReduxBam(meta) {
-        return getTumorDnaReduxBam(meta) !== null
+        return getTumorDnaReduxBam(meta) != null
     }
 
 
@@ -622,15 +622,15 @@ class Utils {
 
 
     static public hasNormalDnaFastq(meta) {
-        return getNormalDnaFastq(meta) !== null
+        return getNormalDnaFastq(meta) != null
     }
 
     static public hasNormalDnaBam(meta) {
-        return getNormalDnaBam(meta) !== null
+        return getNormalDnaBam(meta) != null
     }
 
     static public hasNormalDnaReduxBam(meta) {
-        return getNormalDnaReduxBam(meta) !== null
+        return getNormalDnaReduxBam(meta) != null
     }
 
     static public hasDnaFastq(meta) {
@@ -661,15 +661,15 @@ class Utils {
 
 
     static public hasDonorDnaFastq(meta) {
-        return getDonorDnaFastq(meta) !== null
+        return getDonorDnaFastq(meta) != null
     }
 
     static public hasDonorDnaBam(meta) {
-        return getDonorDnaBam(meta) !== null
+        return getDonorDnaBam(meta) != null
     }
 
     static public hasDonorDnaReduxBam(meta) {
-        return getDonorDnaReduxBam(meta) !== null
+        return getDonorDnaReduxBam(meta) != null
     }
 
 
@@ -688,11 +688,11 @@ class Utils {
 
 
     static public hasTumorRnaFastq(meta) {
-        return getTumorRnaFastq(meta) !== null
+        return getTumorRnaFastq(meta) != null
     }
 
     static public hasTumorRnaBam(meta) {
-        return getTumorRnaBam(meta) !== null
+        return getTumorRnaBam(meta) != null
     }
 
 

@@ -24,9 +24,9 @@ process ISOFOX {
     path tpm_norm
 
     output:
-    tuple val(meta), path('isofox/'), emit: isofox_dir
-    path 'versions.yml'             , emit: versions
-    path '.command.*'               , emit: command_files
+    tuple val(meta), path('isofox/')                  , topic: isofox_dir
+    tuple val(meta), val('isofox'), path('.command.*'), topic: command_files
+    path 'versions.yml'                               , topic: versions
 
     when:
     task.ext.when == null || task.ext.when

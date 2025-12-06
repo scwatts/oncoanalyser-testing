@@ -21,10 +21,10 @@ process PAVE_GERMLINE {
     val sequencing_platform
 
     output:
-    tuple val(meta), path('*.vcf.gz')    , emit: vcf
-    tuple val(meta), path('*.vcf.gz.tbi'), emit: index
-    path 'versions.yml'                  , emit: versions
-    path '.command.*'                    , emit: command_files
+    tuple val(meta), path('*.vcf.gz')                        , topic: pave_germline_vcf
+    tuple val(meta), path('*.vcf.gz.tbi')                    , topic: pave_germline_index
+    tuple val(meta), val('pave_germline'), path('.command.*'), topic: command_files
+    path 'versions.yml'                                      , topic: versions
 
     when:
     task.ext.when == null || task.ext.when
