@@ -15,16 +15,25 @@ process REDUX {
     path genome_dict
     path unmap_regions
     path msi_jitter_sites
+    val sequencing_type
     val umi_enable
     val umi_duplex_delim
+    val targeted_mode
 
     output:
-    tuple val(meta), path('*.redux.bam'), path('*.redux.bam.bai'), emit: bam
-    tuple val(meta), path('*.duplicate_freq.tsv')                , emit: dup_freq_tsv
-    tuple val(meta), path('*.jitter_params.tsv')                 , emit: jitter_tsv
-    tuple val(meta), path('*.ms_table.tsv.gz')                   , emit: ms_tsv
-    path 'versions.yml'                                          , emit: versions
-    path '.command.*'                                            , emit: command_files
+    tuple val(meta), path("redux_${meta.sample_id}/")                                          , emit: redux_dir
+
+    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.bam"),
+                     path("redux_${meta.sample_id}/${meta.sample_id}.redux.bam.bai")           , emit: bam
+
+    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.bqr.tsv")           , emit: bqr_tsv
+    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.bqr.png")           , emit: bqr_plot
+    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.duplicate_freq.tsv"), emit: dup_freq_tsv, optional: true
+    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.jitter_params.tsv") , emit: jitter_tsv
+    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.ms_table.tsv.gz")   , emit: ms_tsv
+
+    path 'versions.yml', emit: versions
+    path '.command.*'  , emit: command_files
 
     when:
     task.ext.when == null || task.ext.when
@@ -36,31 +45,60 @@ process REDUX {
 
     def log_level_arg = task.ext.log_level ? "-log_level ${task.ext.log_level}" : ''
 
-    def form_consensus_arg = umi_enable ? '' : '-form_consensus'
+    def form_consensus_arg = ''
+    def umi_enable_arg = ''
+    def umi_duplex_arg = ''
+    def umi_duplex_delim_arg = ''
+    def skip_duplicate_marking_arg = ''
+    def bqr_use_all_regions_arg = ''
 
-    def umi_args_list = []
-    if (umi_enable) umi_args_list.add('-umi_enabled')
-    if (umi_duplex_delim) umi_args_list.add("-umi_duplex -umi_duplex_delim ${umi_duplex_delim}")
-    def umi_args = umi_args_list ? umi_args_list.join(' ') : ''
+    if(umi_enable) {
+        umi_enable_arg = '-umi_enabled'
+    } else {
+        form_consensus_arg = '-form_consensus'
+    }
+
+    if(umi_duplex_delim) {
+        umi_duplex_arg = '-umi_duplex'
+        umi_duplex_delim_arg = "-umi_duplex_delim ${umi_duplex_delim}"
+    }
+
+    def umi_args = [umi_enable_arg, umi_duplex_arg, umi_duplex_delim_arg]
+        .findAll { it != '' }
+        .join(' ')
+
+    if(sequencing_type == 'ULTIMA') {
+        form_consensus_arg = ''
+        skip_duplicate_marking_arg = '-skip_duplicate_marking'
+    }
+
+    if(targeted_mode) {
+        bqr_use_all_regions_arg = '-bqr_use_all_regions'
+    }
 
     """
+    mkdir -p redux_${meta.sample_id}/
+
     redux \\
         -Xmx${Math.round(task.memory.bytes * xmx_mod)} \\
         ${args} \\
         -sample ${meta.sample_id} \\
-        ${form_consensus_arg} \\
-        ${umi_args} \\
         -input_bam ${bams.join(',')} \\
-        -output_bam ./${meta.sample_id}.redux.bam \\
         -ref_genome ${genome_fasta} \\
         -ref_genome_version ${genome_ver} \\
         -ref_genome_msi_file ${msi_jitter_sites} \\
         -unmap_regions ${unmap_regions} \\
         -bamtool \$(which samtools) \\
-        -write_stats \\
+        -sequencing_type ${sequencing_type} \\
+        -bqr_write_plot \\
+        ${form_consensus_arg} \\
+        ${umi_args} \\
+        ${skip_duplicate_marking_arg} \\
+        ${bqr_use_all_regions_arg} \\
         -threads ${task.cpus} \\
         ${log_level_arg} \\
-        -output_dir ./
+        -output_bam redux_${meta.sample_id}/${meta.sample_id}.redux.bam \\
+        -output_dir redux_${meta.sample_id}/
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -71,17 +109,21 @@ process REDUX {
 
     stub:
     """
-    touch ${meta.sample_id}.redux.bam
-    touch ${meta.sample_id}.redux.bam.bai
-    touch ${meta.sample_id}.duplicate_freq.tsv
-    touch ${meta.sample_id}.jitter_params.tsv
-    touch ${meta.sample_id}.ms_table.tsv.gz
-    touch ${meta.sample_id}.repeat.tsv.gz
+    mkdir -p redux_${meta.sample_id}/
+
+    touch redux_${meta.sample_id}/${meta.sample_id}.redux.bam
+    touch redux_${meta.sample_id}/${meta.sample_id}.redux.bam.bai
+    touch redux_${meta.sample_id}/${meta.sample_id}.redux.bqr.tsv
+    touch redux_${meta.sample_id}/${meta.sample_id}.redux.bqr.png
+    touch redux_${meta.sample_id}/${meta.sample_id}.redux.duplicate_freq.tsv
+    touch redux_${meta.sample_id}/${meta.sample_id}.redux.jitter_params.tsv
+    touch redux_${meta.sample_id}/${meta.sample_id}.redux.ms_table.tsv.gz
+    touch redux_${meta.sample_id}/${meta.sample_id}.redux.repeat.tsv.gz
 
     if [[ -n "${umi_enable}" ]]; then
-        touch ${meta.sample_id}.umi_coord_freq.tsv
-        touch ${meta.sample_id}.umi_edit_distance.tsv
-        touch ${meta.sample_id}.umi_nucleotide_freq.tsv
+        touch redux_${meta.sample_id}/${meta.sample_id}.umi_coord_freq.tsv
+        touch redux_${meta.sample_id}/${meta.sample_id}.umi_edit_distance.tsv
+        touch redux_${meta.sample_id}/${meta.sample_id}.umi_nucleotide_freq.tsv
     fi;
 
     echo -e '${task.process}:\\n  stub: noversions\\n' > versions.yml
