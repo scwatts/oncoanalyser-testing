@@ -114,17 +114,19 @@ workflow PANEL_RESOURCE_CREATION {
         ref_data.genome_dict,
         hmf_data.unmap_regions,
         hmf_data.msi_jitter_sites,
+        params.sequencing_type,
         params.redux_umi_enabled,
         params.redux_umi_duplex_delim,
+        true,  // targeted_mode
     )
 
     ch_versions = ch_versions.mix(REDUX_PROCESSING.out.versions)
 
     // channel: [ meta, bam, bai ]
-    ch_redux_dna_tumor_out = REDUX_PROCESSING.out.dna_tumor
-    ch_redux_dna_normal_out = REDUX_PROCESSING.out.dna_normal
+    ch_redux_dna_tumor_bam_out = REDUX_PROCESSING.out.dna_tumor
+    ch_redux_dna_normal_bam_out = REDUX_PROCESSING.out.dna_normal
 
-    // channel: [ meta, dup_freq_tsv, jitter_tsv, ms_tsv, repeat_tsv ]
+    // channel: [ meta, bqr_tsv, jitter_tsv, ms_tsv ]
     ch_redux_dna_tumor_tsv_out = REDUX_PROCESSING.out.dna_tumor_tsv
     ch_redux_dna_normal_tsv_out = REDUX_PROCESSING.out.dna_normal_tsv
 
@@ -161,8 +163,8 @@ workflow PANEL_RESOURCE_CREATION {
     //
     AMBER_PROFILING(
         ch_inputs,
-        ch_redux_dna_tumor_out,
-        ch_redux_dna_normal_out,
+        ch_redux_dna_tumor_bam_out,
+        ch_redux_dna_normal_bam_out,
         ch_inputs.map { meta -> [meta, [], []] },  // ch_donor_bam
         ref_data.genome_version,
         hmf_data.heterozygous_sites,
@@ -180,8 +182,8 @@ workflow PANEL_RESOURCE_CREATION {
     //
     COBALT_PROFILING(
         ch_inputs,
-        ch_redux_dna_tumor_out,
-        ch_redux_dna_normal_out,
+        ch_redux_dna_tumor_bam_out,
+        ch_redux_dna_normal_bam_out,
         ref_data.genome_version,
         hmf_data.gc_profile,
         hmf_data.diploid_bed,
@@ -199,8 +201,8 @@ workflow PANEL_RESOURCE_CREATION {
     //
     SAGE_CALLING(
         ch_inputs,
-        ch_redux_dna_tumor_out,
-        ch_redux_dna_normal_out,
+        ch_redux_dna_tumor_bam_out,
+        ch_redux_dna_normal_bam_out,
         ch_inputs.map { meta -> [meta, [], []] },  // ch_donor_bam
         ch_redux_dna_tumor_tsv_out,
         ch_redux_dna_normal_tsv_out,
@@ -217,6 +219,7 @@ workflow PANEL_RESOURCE_CREATION {
         driver_gene_panel,
         hmf_data.ensembl_data_resources,
         hmf_data.gnomad_resource,
+        params.sequencing_type,
         true,  // enable_germline
         true,  // targeted_mode
     )
@@ -256,7 +259,7 @@ workflow PANEL_RESOURCE_CREATION {
         ch_isofox_out,
         ref_data.genome_version,
         isofox_gene_ids,
-        hmf_data.gene_exp_distribution,
+        hmf_data.isofox_gene_distribution,
     )
 
     ch_versions = ch_versions.mix(ISOFOX_NORMALISATION.out.versions)
