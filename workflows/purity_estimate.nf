@@ -91,11 +91,11 @@ workflow PURITY_ESTIMATE {
     // SUBWORKFLOW: Run REDUX for DNA BAMs
     //
     // channel: [ meta, bam, bai ]
-    ch_redux_dna_tumor_out = Channel.empty()
-    ch_redux_dna_normal_out = Channel.empty()
-    ch_redux_dna_donor_out = Channel.empty()
+    ch_redux_dna_tumor_bam_out = Channel.empty()
+    ch_redux_dna_normal_bam_out = Channel.empty()
+    ch_redux_dna_donor_bam_out = Channel.empty()
 
-    // channel: [ meta, dup_freq_tsv, jitter_tsv, ms_tsv, repeat_tsv ]
+    // channel: [ meta, bqr_tsv, jitter_tsv, ms_tsv ]
     ch_redux_dna_tumor_tsv_out = Channel.empty()
     ch_redux_dna_normal_tsv_out = Channel.empty()
     ch_redux_dna_donor_tsv_out = Channel.empty()
@@ -113,15 +113,17 @@ workflow PURITY_ESTIMATE {
             ref_data.genome_dict,
             hmf_data.unmap_regions,
             hmf_data.msi_jitter_sites,
+            params.sequencing_type,
             params.redux_umi_enabled,
             params.redux_umi_duplex_delim,
+            targeted_mode,
         )
 
         ch_versions = ch_versions.mix(REDUX_PROCESSING.out.versions)
 
-        ch_redux_dna_tumor_out = ch_redux_dna_tumor_out.mix(REDUX_PROCESSING.out.dna_tumor)
-        ch_redux_dna_normal_out = ch_redux_dna_normal_out.mix(REDUX_PROCESSING.out.dna_normal)
-        ch_redux_dna_donor_out = ch_redux_dna_donor_out.mix(REDUX_PROCESSING.out.dna_donor)
+        ch_redux_dna_tumor_bam_out = ch_redux_dna_tumor_bam_out.mix(REDUX_PROCESSING.out.dna_tumor_bam)
+        ch_redux_dna_normal_bam_out = ch_redux_dna_normal_bam_out.mix(REDUX_PROCESSING.out.dna_normal_bam)
+        ch_redux_dna_donor_bam_out = ch_redux_dna_donor_bam_out.mix(REDUX_PROCESSING.out.dna_donor_bam)
 
         ch_redux_dna_tumor_tsv_out = ch_redux_dna_tumor_tsv_out.mix(REDUX_PROCESSING.out.dna_tumor_tsv)
         ch_redux_dna_normal_tsv_out = ch_redux_dna_normal_tsv_out.mix(REDUX_PROCESSING.out.dna_normal_tsv)
@@ -150,9 +152,9 @@ workflow PURITY_ESTIMATE {
 
         AMBER_PROFILING(
             ch_inputs,
-            ch_redux_dna_tumor_out,
-            ch_redux_dna_normal_out,
-            ch_redux_dna_donor_out,
+            ch_redux_dna_tumor_bam_out,
+            ch_redux_dna_normal_bam_out,
+            ch_redux_dna_donor_bam_out,
             ref_data.genome_version,
             hmf_data.heterozygous_sites,
             [],  // target_region_bed
@@ -178,8 +180,8 @@ workflow PURITY_ESTIMATE {
 
         COBALT_PROFILING(
             ch_inputs,
-            ch_redux_dna_tumor_out,
-            ch_redux_dna_normal_out,
+            ch_redux_dna_tumor_bam_out,
+            ch_redux_dna_normal_bam_out,
             ref_data.genome_version,
             hmf_data.gc_profile,
             hmf_data.diploid_bed,
@@ -207,13 +209,14 @@ workflow PURITY_ESTIMATE {
         SAGE_APPEND(
             ch_inputs,
             ch_inputs.map { meta -> [meta, []] },  // ch_purple_dir
-            ch_redux_dna_tumor_out,
+            ch_redux_dna_tumor_bam_out,
             ch_redux_dna_tumor_tsv_out,
             ch_inputs.map { meta -> [meta, [], []] },  // ch_tumor_rna_bam
             ref_data.genome_fasta,
             ref_data.genome_version,
             ref_data.genome_fai,
             ref_data.genome_dict,
+            params.sequencing_type,
             false,  // run_germline
             purity_estimate_run_mode === Constants.RunMode.TARGETED,  // targeted_mode
         )
