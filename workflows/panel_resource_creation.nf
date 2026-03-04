@@ -114,7 +114,7 @@ workflow PANEL_RESOURCE_CREATION {
         ref_data.genome_dict,
         hmf_data.unmap_regions,
         hmf_data.msi_jitter_sites,
-        params.sequencing_type,
+        params.sequencing_platform,
         params.redux_umi_enabled,
         params.redux_umi_duplex_delim,
         true,  // targeted_mode
@@ -219,7 +219,7 @@ workflow PANEL_RESOURCE_CREATION {
         driver_gene_panel,
         hmf_data.ensembl_data_resources,
         hmf_data.gnomad_resource,
-        params.sequencing_type,
+        params.sequencing_platform,
         true,  // enable_germline
         true,  // targeted_mode
     )

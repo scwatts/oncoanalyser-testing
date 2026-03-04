@@ -209,9 +209,7 @@ workflow PREPARE_REFERENCE {
         }
 
         // Set PON paths
-        def sequencing_type = Utils.getEnumFromString(params.sequencing_type, Constants.SequencingType)
-
-        if(sequencing_type === Constants.SequencingType.ULTIMA) {
+        if (params.sequencing_platform === 'ultima') {
 
             ch_hmf_data = ch_hmf_data
                 .map { d ->
@@ -227,7 +225,7 @@ workflow PREPARE_REFERENCE {
                     return d
                 }
 
-        } else if(sequencing_type === Constants.SequencingType.SBX) {
+        } else if (params.sequencing_platform === 'sbx') {
 
             ch_hmf_data = ch_hmf_data
                 .map { d ->

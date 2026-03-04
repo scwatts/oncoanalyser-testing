@@ -10,21 +10,21 @@ include { LILAC } from '../../../modules/local/lilac/main'
 workflow LILAC_CALLING {
     take:
     // Sample data
-    ch_inputs          // channel: [mandatory] [ meta ]
-    ch_tumor_bam       // channel: [mandatory] [ meta, bam, bai ]
-    ch_normal_bam      // channel: [mandatory] [ meta, bam, bai ]
-    ch_tumor_rna_bam   // channel: [mandatory] [ meta, bam, bai ]
-    ch_purple          // channel: [mandatory] [ meta, purple_dir ]
+    ch_inputs           // channel: [mandatory] [ meta ]
+    ch_tumor_bam        // channel: [mandatory] [ meta, bam, bai ]
+    ch_normal_bam       // channel: [mandatory] [ meta, bam, bai ]
+    ch_tumor_rna_bam    // channel: [mandatory] [ meta, bam, bai ]
+    ch_purple           // channel: [mandatory] [ meta, purple_dir ]
 
     // Reference data
-    genome_fasta       // channel: [mandatory] /path/to/genome_fasta
-    genome_version     // channel: [mandatory] genome version
-    genome_fai         // channel: [mandatory] /path/to/genome_fai
-    lilac_resource_dir // channel: [mandatory] /path/to/lilac_resource_dir/
-    targeted_mode      // boolean: [mandatory] Set targeted mode
+    genome_fasta        // channel: [mandatory] /path/to/genome_fasta
+    genome_version      // channel: [mandatory] genome version
+    genome_fai          // channel: [mandatory] /path/to/genome_fai
+    lilac_resource_dir  // channel: [mandatory] /path/to/lilac_resource_dir/
+    targeted_mode       // boolean: [mandatory] Set targeted mode
 
     // Params
-    sequencing_type    // string:  [mandatory] sequencing type
+    sequencing_platform // string:  [mandatory] sequencing platform
 
     main:
     // Channel for version.yml files
@@ -101,7 +101,7 @@ workflow LILAC_CALLING {
         genome_fai,
         lilac_resource_dir,
         targeted_mode,
-        sequencing_type,
+        sequencing_platform,
     )
 
     ch_versions = ch_versions.mix(LILAC.out.versions)

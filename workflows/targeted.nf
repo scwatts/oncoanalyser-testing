@@ -148,7 +148,7 @@ workflow TARGETED {
             ref_data.genome_dict,
             hmf_data.unmap_regions,
             hmf_data.msi_jitter_sites,
-            params.sequencing_type,
+            params.sequencing_platform,
             params.redux_umi_enabled,
             params.redux_umi_duplex_delim,
             true,  // targeted_mode
@@ -303,7 +303,7 @@ workflow TARGETED {
             hmf_data.repeatmasker_annotations,
             hmf_data.unmap_regions,
             panel_data.target_region_bed,
-            params.sequencing_type,
+            params.sequencing_platform,
         )
 
         ch_versions = ch_versions.mix(ESVEE_CALLING.out.versions)
@@ -349,7 +349,7 @@ workflow TARGETED {
             panel_data.driver_gene_panel,
             hmf_data.ensembl_data_resources,
             hmf_data.gnomad_resource,
-            params.sequencing_type,
+            params.sequencing_platform,
             true,  // enable_germline
             true,  // targeted_mode
         )
@@ -394,7 +394,7 @@ workflow TARGETED {
             panel_data.driver_gene_panel,
             hmf_data.ensembl_data_resources,
             hmf_data.gnomad_resource,
-            params.sequencing_type,
+            params.sequencing_platform,
         )
 
         ch_versions = ch_versions.mix(PAVE_ANNOTATION.out.versions)
@@ -467,7 +467,7 @@ workflow TARGETED {
             ref_data.genome_version,
             ref_data.genome_fai,
             ref_data.genome_dict,
-            params.sequencing_type,
+            params.sequencing_platform,
             true,  // enable_germline
             true,  // targeted_mode
         )
@@ -636,7 +636,7 @@ workflow TARGETED {
             ref_data.genome_fai,
             hmf_data.lilac_resources,
             true,  // targeted_mode,
-            params.sequencing_type,
+            params.sequencing_platform,
         )
 
         ch_versions = ch_versions.mix(LILAC_CALLING.out.versions)

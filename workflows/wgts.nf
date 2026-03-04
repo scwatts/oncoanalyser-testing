@@ -154,7 +154,7 @@ workflow WGTS {
             ref_data.genome_dict,
             hmf_data.unmap_regions,
             hmf_data.msi_jitter_sites,
-            params.sequencing_type,
+            params.sequencing_platform,
             false,  // umi_enable
             '',  // umi_duplex_delim
             false,  // targeted_mode
@@ -305,7 +305,7 @@ workflow WGTS {
             hmf_data.repeatmasker_annotations,
             hmf_data.unmap_regions,
             [],  // target_region_bed
-            params.sequencing_type,
+            params.sequencing_platform,
         )
 
         ch_versions = ch_versions.mix(ESVEE_CALLING.out.versions)
@@ -351,7 +351,7 @@ workflow WGTS {
             hmf_data.driver_gene_panel,
             hmf_data.ensembl_data_resources,
             hmf_data.gnomad_resource,
-            params.sequencing_type,
+            params.sequencing_platform,
             true,  // enable_germline
             false, // targeted_mode
         )
@@ -396,7 +396,7 @@ workflow WGTS {
             hmf_data.driver_gene_panel,
             hmf_data.ensembl_data_resources,
             hmf_data.gnomad_resource,
-            params.sequencing_type,
+            params.sequencing_platform,
         )
 
         ch_versions = ch_versions.mix(PAVE_ANNOTATION.out.versions)
@@ -469,7 +469,7 @@ workflow WGTS {
             ref_data.genome_version,
             ref_data.genome_fai,
             ref_data.genome_dict,
-            params.sequencing_type,
+            params.sequencing_platform,
             run_config.stages.orange,  // enable_germline [run for ORANGE but not Neo]
             false,  // targeted_mode
         )
@@ -686,7 +686,7 @@ workflow WGTS {
             ref_data.genome_fai,
             hmf_data.lilac_resources,
             false,  // targeted_mode,
-            params.sequencing_type,
+            params.sequencing_platform,
         )
 
         ch_versions = ch_versions.mix(LILAC_CALLING.out.versions)
@@ -713,7 +713,7 @@ workflow WGTS {
             ch_cobalt_out,
             ch_purple_out,
             ref_data.genome_version,
-            params.sequencing_type,
+            params.sequencing_platform,
         )
 
         ch_versions = ch_versions.mix(TEAL_CHARACTERISATION.out.versions)

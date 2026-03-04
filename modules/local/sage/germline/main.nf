@@ -17,7 +17,7 @@ process SAGE_GERMLINE {
     path sage_highconf_regions
     path driver_gene_panel
     path ensembl_data_resources
-    val sequencing_type
+    val sequencing_platform
     val targeted_mode
 
     output:
@@ -53,7 +53,7 @@ process SAGE_GERMLINE {
         -driver_gene_panel ${driver_gene_panel} \\
         -high_confidence_bed ${sage_highconf_regions} \\
         -ensembl_data_dir ${ensembl_data_resources} \\
-        -sequencing_type ${sequencing_type} \\
+        -sequencing_type ${sequencing_platform} \\
         -germline \\
         -panel_only \\
         ${high_depth_mode_arg} \\

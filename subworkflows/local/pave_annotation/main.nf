@@ -30,7 +30,7 @@ workflow PAVE_ANNOTATION {
     gnomad_resource        // channel: [mandatory] /path/to/gnomad_resource
 
     // Params
-    sequencing_type              // string:  [mandatory] sequencing type
+    sequencing_platform    // string:  [mandatory] sequencing platform
 
     main:
     // Channel for version.yml files
@@ -85,7 +85,7 @@ workflow PAVE_ANNOTATION {
         segment_mappability,
         driver_gene_panel,
         ensembl_data_resources,
-        sequencing_type,
+        sequencing_platform,
     )
 
     ch_versions = ch_versions.mix(PAVE_GERMLINE.out.versions)
@@ -140,7 +140,7 @@ workflow PAVE_ANNOTATION {
         driver_gene_panel,
         ensembl_data_resources,
         gnomad_resource,
-        sequencing_type,
+        sequencing_platform,
     )
 
     ch_versions = ch_versions.mix(PAVE_SOMATIC.out.versions)

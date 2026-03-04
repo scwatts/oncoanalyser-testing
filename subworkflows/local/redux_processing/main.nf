@@ -10,24 +10,24 @@ include { REDUX } from '../../../modules/local/redux/main'
 workflow REDUX_PROCESSING {
     take:
     // Sample data
-    ch_inputs        // channel: [mandatory] [ meta ]
-    ch_dna_tumor     // channel: [mandatory] [ meta, [bam, ...], [bai, ...] ]
-    ch_dna_normal    // channel: [mandatory] [ meta, [bam, ...], [bai, ...] ]
-    ch_dna_donor     // channel: [mandatory] [ meta, [bam, ...], [bai, ...] ]
+    ch_inputs           // channel: [mandatory] [ meta ]
+    ch_dna_tumor        // channel: [mandatory] [ meta, [bam, ...], [bai, ...] ]
+    ch_dna_normal       // channel: [mandatory] [ meta, [bam, ...], [bai, ...] ]
+    ch_dna_donor        // channel: [mandatory] [ meta, [bam, ...], [bai, ...] ]
 
     // Reference data
-    genome_fasta     // channel: [mandatory] /path/to/genome_fasta
-    genome_ver       // channel: [mandatory] genome version
-    genome_fai       // channel: [mandatory] /path/to/genome_fai
-    genome_dict      // channel: [mandatory] /path/to/genome_dict
-    unmap_regions    // channel: [mandatory] /path/to/unmap_regions
-    msi_jitter_sites // channel: [mandatory] /path/to/msi_jitter_sites
+    genome_fasta        // channel: [mandatory] /path/to/genome_fasta
+    genome_ver          // channel: [mandatory] genome version
+    genome_fai          // channel: [mandatory] /path/to/genome_fai
+    genome_dict         // channel: [mandatory] /path/to/genome_dict
+    unmap_regions       // channel: [mandatory] /path/to/unmap_regions
+    msi_jitter_sites    // channel: [mandatory] /path/to/msi_jitter_sites
 
     // Params
-    sequencing_type  // string:  [mandatory] sequencing type
-    umi_enable       // boolean: [mandatory] enable UMI processing
-    umi_duplex_delim // string:  [optional] UMI duplex delimiter
-    targeted_mode    // boolean: [mandatory] Set targeted mode
+    sequencing_platform // string:  [mandatory] sequencing platform
+    umi_enable          // boolean: [mandatory] enable UMI processing
+    umi_duplex_delim    // string:  [optional] UMI duplex delimiter
+    targeted_mode       // boolean: [mandatory] Set targeted mode
 
     main:
     // Channel for version.yml files
@@ -111,7 +111,7 @@ workflow REDUX_PROCESSING {
         genome_dict,
         unmap_regions,
         msi_jitter_sites,
-        sequencing_type,
+        sequencing_platform,
         umi_enable,
         umi_duplex_delim,
         targeted_mode,

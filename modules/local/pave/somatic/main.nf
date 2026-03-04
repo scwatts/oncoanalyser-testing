@@ -19,7 +19,7 @@ process PAVE_SOMATIC {
     path driver_gene_panel
     path ensembl_data_resources
     path gnomad_resource
-    val sequencing_type
+    val sequencing_platform
 
     output:
     tuple val(meta), path('*.vcf.gz')    , emit: vcf
@@ -65,7 +65,7 @@ process PAVE_SOMATIC {
         -driver_gene_panel ${driver_gene_panel} \\
         -mappability_bed ${segment_mappability} \\
         -ensembl_data_dir ${ensembl_data_resources} \\
-        -sequencing_type ${sequencing_type} \\
+        -sequencing_type ${sequencing_platform} \\
         -threads ${task.cpus} \\
         ${log_level_arg} \\
         -output_dir ./

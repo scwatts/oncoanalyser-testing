@@ -11,19 +11,19 @@ include { TEAL_PIPELINE } from '../../../modules/local/teal/pipeline/main'
 workflow TEAL_CHARACTERISATION {
     take:
     // Sample data
-    ch_inputs         // channel: [mandatory] [ meta ]
-    ch_tumor_bam      // channel: [mandatory] [ meta, bam, bai ]
-    ch_normal_bam     // channel: [mandatory] [ meta, bam, bai ]
-    ch_tumor_metrics  // channel: [mandatory] [ meta, metrics_dir ]
-    ch_normal_metrics // channel: [mandatory] [ meta, metrics_dir ]
-    ch_cobalt_dir     // channel: [mandatory] [ meta, cobalt_dir ]
-    ch_purple_dir     // channel: [mandatory] [ meta, purple_dir ]
+    ch_inputs           // channel: [mandatory] [ meta ]
+    ch_tumor_bam        // channel: [mandatory] [ meta, bam, bai ]
+    ch_normal_bam       // channel: [mandatory] [ meta, bam, bai ]
+    ch_tumor_metrics    // channel: [mandatory] [ meta, metrics_dir ]
+    ch_normal_metrics   // channel: [mandatory] [ meta, metrics_dir ]
+    ch_cobalt_dir       // channel: [mandatory] [ meta, cobalt_dir ]
+    ch_purple_dir       // channel: [mandatory] [ meta, purple_dir ]
 
     // Reference data
-    genome_version    // channel: [mandatory] genome version
+    genome_version      // channel: [mandatory] genome version
 
     // Params
-    sequencing_type  // string:  [mandatory] sequencing type
+    sequencing_platform // string:  [mandatory] sequencing platform
 
     main:
     // Channel for version.yml files
@@ -79,7 +79,7 @@ workflow TEAL_CHARACTERISATION {
     TEAL_PREP(
         ch_teal_prep_inputs,
         genome_version,
-        sequencing_type,
+        sequencing_platform,
     )
 
     ch_versions = ch_versions.mix(TEAL_PREP.out.versions)
@@ -156,7 +156,7 @@ workflow TEAL_CHARACTERISATION {
     TEAL_PIPELINE(
         ch_teal_pipeline_inputs,
         genome_version,
-        sequencing_type,
+        sequencing_platform,
     )
 
     ch_versions = ch_versions.mix(TEAL_PIPELINE.out.versions)

@@ -51,6 +51,11 @@ class WorkflowMain {
             return
         }
 
+        // If sequencing platform not set, assume Illumina for now
+        if (!params.containsKey('sequencing_platform')) {
+            params.sequencing_platform == 'illumina'
+        }
+
         // Set defaults specific to run configuration without attempting to validate
 
         def run_mode

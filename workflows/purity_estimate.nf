@@ -113,7 +113,7 @@ workflow PURITY_ESTIMATE {
             ref_data.genome_dict,
             hmf_data.unmap_regions,
             hmf_data.msi_jitter_sites,
-            params.sequencing_type,
+            params.sequencing_platform,
             params.redux_umi_enabled,
             params.redux_umi_duplex_delim,
             targeted_mode,
@@ -216,7 +216,7 @@ workflow PURITY_ESTIMATE {
             ref_data.genome_version,
             ref_data.genome_fai,
             ref_data.genome_dict,
-            params.sequencing_type,
+            params.sequencing_platform,
             false,  // run_germline
             purity_estimate_run_mode === Constants.RunMode.TARGETED,  // targeted_mode
         )

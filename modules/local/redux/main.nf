@@ -15,7 +15,7 @@ process REDUX {
     path genome_dict
     path unmap_regions
     path msi_jitter_sites
-    val sequencing_type
+    val sequencing_platform
     val umi_enable
     val umi_duplex_delim
     val targeted_mode
@@ -67,12 +67,12 @@ process REDUX {
         .findAll { it != '' }
         .join(' ')
 
-    if(sequencing_type == 'ULTIMA') {
+    if (sequencing_platform == 'ultima') {
         form_consensus_arg = ''
         skip_duplicate_marking_arg = '-skip_duplicate_marking'
     }
 
-    if(targeted_mode) {
+    if (targeted_mode) {
         bqr_use_all_regions_arg = '-bqr_use_all_regions'
     }
 
@@ -89,7 +89,7 @@ process REDUX {
         -ref_genome_msi_file ${msi_jitter_sites} \\
         -unmap_regions ${unmap_regions} \\
         -bamtool \$(which samtools) \\
-        -sequencing_type ${sequencing_type} \\
+        -sequencing_type ${sequencing_platform} \\
         -bqr_write_plot \\
         ${form_consensus_arg} \\
         ${umi_args} \\

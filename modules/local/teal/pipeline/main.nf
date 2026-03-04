@@ -18,7 +18,7 @@ process TEAL_PIPELINE {
         path(cobalt_dir),
         path(purple_dir)
     val genome_ver
-    val sequencing_type
+    val sequencing_platform
 
     output:
     tuple val(meta), path('teal/*.tsv*'), emit: teal_tsvs
@@ -64,7 +64,7 @@ process TEAL_PIPELINE {
         ${reference_wgs_metrics_arg} \\
         ${tumor_wgs_metrics_arg} \\
         -ref_genome_version ${genome_ver} \\
-        -sequencing_type ${sequencing_type} \\
+        -sequencing_type ${sequencing_platform} \\
         -threads ${task.cpus} \\
         -output_dir teal/
 

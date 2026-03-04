@@ -10,7 +10,7 @@ process TEAL_PREP {
     input:
     tuple val(meta), path(tumor_bam), path(tumor_bai), path(normal_bam), path(normal_bai)
     val genome_ver
-    val sequencing_type
+    val sequencing_platform
 
     output:
     tuple val(meta), path("teal_bam/${meta.tumor_id}.teal.telbam{.bam,.bam.bai}") , emit: tumor_teal_bam
@@ -54,7 +54,7 @@ process TEAL_PREP {
         ${tumor_arg} \\
         ${tumor_bam_arg} \\
         -ref_genome_version ${genome_ver} \\
-        -sequencing_type ${sequencing_type} \\
+        -sequencing_type ${sequencing_platform} \\
         -threads ${task.cpus} \\
         -output_dir teal_bam/
 

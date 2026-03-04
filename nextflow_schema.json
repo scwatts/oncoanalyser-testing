@@ -56,12 +56,11 @@
                     "fa_icon": "fas fa-diagram-project",
                     "enum": ["wgts", "targeted"]
                 },
-                "sequencing_type": {
+                "sequencing_platform": {
                     "type": "string",
-                    "description": "Type of sequencing technology.",
+                    "description": "Type of sequencing platform.",
                     "fa_icon": "far fa-file-code",
-                    "enum": ["ILLUMINA", "SBX", "ULTIMA"],
-                    "default": "ILLUMINA"
+                    "enum": ["illumina", "sbx", "ultima"]
                 },
                 "panel": {
                     "type": "string",

@@ -21,7 +21,7 @@ process SAGE_SOMATIC {
     path driver_gene_panel
     path ensembl_data_resources
     path gnomad_resource
-    val sequencing_type
+    val sequencing_platform
     val targeted_mode
 
     output:
@@ -49,7 +49,7 @@ process SAGE_SOMATIC {
     def tinc_args = ''
 
     def should_run_tinc_wgs = !targeted_mode && tumor_bam && normal_bam
-    def should_run_tinc_seq_type = sequencing_type == 'ILLUMINA' // NOTE(LN): Skip TINC for SBX and Ultima for now
+    def should_run_tinc_seq_type = sequencing_platform == 'illumina'
     def should_run_tinc = should_run_tinc_wgs && should_run_tinc_seq_type
 
     if (should_run_tinc) {
@@ -89,7 +89,7 @@ process SAGE_SOMATIC {
         -driver_gene_panel ${driver_gene_panel} \\
         -high_confidence_bed ${sage_highconf_regions} \\
         -ensembl_data_dir ${ensembl_data_resources} \\
-        -sequencing_type ${sequencing_type} \\
+        -sequencing_type ${sequencing_platform} \\
         -include_mt \\
         ${tinc_args} \\
         ${high_depth_mode_arg} \\
