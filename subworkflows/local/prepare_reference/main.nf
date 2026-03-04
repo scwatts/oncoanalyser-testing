@@ -209,7 +209,7 @@ workflow PREPARE_REFERENCE {
         }
 
         // Set PON paths
-        def sequencing_type = Enums.getEnumFromString(params.sequencing_type, Constants.SequencingType)
+        def sequencing_type = Utils.getEnumFromString(params.sequencing_type, Constants.SequencingType)
 
         if(sequencing_type === Constants.SequencingType.ULTIMA) {
 
@@ -298,7 +298,7 @@ workflow PREPARE_REFERENCE {
     //
     // Write prepared reference data if requested
     //
-    if (prepare_reference_only) {
+    if (prep_config.prepare_ref_data_only || params.prepare_reference_only) {
 
         WRITE_FASTA(ch_genome_fasta)
         WRITE_FAI(ch_genome_fai)

@@ -89,16 +89,18 @@ workflow SAGE_PLOTTING {
     ch_sage_plotting_inputs = ch_inputs_sorted.runnable
         .map { meta, tumor_bam, tumor_bai, normal_bam, normal_bai, donor_bam, donor_bai, redux_tsvs, purple_dir ->
 
+            def tumor_id = Utils.getTumorDnaSampleName(meta)
+
             def meta_sage = [
                 key: meta.group_id,
                 id: meta.group_id,
-                tumor_id: Utils.getTumorDnaSampleName(meta),
+                tumor_id: tumor_id,
                 normal_id: normal_bam ? Utils.getNormalDnaSampleName(meta) : null,
                 donor_id: donor_bam ? Utils.getDonorDnaSampleName(meta) : null,
             ]
 
-            def purple_smlv_vcf = Utils.getPurpleSomaticVcf(meta, purple_dir)
-            def purple_smlv_vcf_tbi = Utils.getPurpleSomaticVcfTbi(meta, purple_dir)
+            def purple_smlv_vcf = file(purple_dir).resolve("${tumor_id}.purple.somatic.vcf.gz")
+            def purple_smlv_vcf_tbi = file(purple_dir).resolve("${tumor_id}.purple.somatic.vcf.gz.tbi")
 
             return [meta_sage, tumor_bam, normal_bam, donor_bam, tumor_bai, normal_bai, donor_bai, redux_tsvs, purple_smlv_vcf, purple_smlv_vcf_tbi]
         }
@@ -123,7 +125,7 @@ workflow SAGE_PLOTTING {
     ch_visualiser_dir_out = Channel.empty()
         .mix(
             WorkflowOncoanalyser.restoreMeta(SAGE_VISUALISER.out.sage_vis_dir, ch_inputs),
-            PlaceholderChannels.toolDir(ch_inputs_sorted.skip),
+            ch_inputs_sorted.skip.map { meta -> [meta, []] },
         )
 
     emit:

@@ -143,16 +143,10 @@ workflow REDUX_PROCESSING {
     // Set outputs, restoring original meta, split by file type
     // channel: [ meta, bam, bai, bqr_tsv, jitter_tsv, ms_tsv, bqr_plot ]
     def createOutputChannels = { ch_redux_out_sample_type, ch_sample_type_skip ->
-
-        def placeholder_bam = [[]] * PlaceholderChannels.N_ITEMS_BAM_BAI
-        def placeholder_tsv = [[]] * PlaceholderChannels.N_ITEMS_REDUX_TSVS
-        def placeholder_plot = [[]] * PlaceholderChannels.N_ITEMS_REDUX_PLOTS
-        def placeholders = [*placeholder_bam, *placeholder_tsv, *placeholder_plot]
-
         return Channel.empty()
             .mix(
                 WorkflowOncoanalyser.restoreMeta(ch_redux_out_sample_type, ch_inputs),
-                ch_sample_type_skip.map { meta -> [meta, *placeholders] },
+                ch_sample_type_skip.map { meta -> [meta, [], [], [], [], [], []] },
             )
             .multiMap { meta, bam, bai, bqr_tsv, jitter_tsv, ms_tsv, bqr_plot ->
                 bam: [meta, bam, bai]
