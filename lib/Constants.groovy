@@ -30,6 +30,12 @@ class Constants {
         WGTS,
     }
 
+    static enum SequencingType {
+        ILLUMINA,
+        SBX,
+        ULTIMA,
+    }
+
     static enum RefDataType {
         // Compound types
         TARGETED,
@@ -69,6 +75,7 @@ class Constants {
         PURPLE,
         REDUX,
         SAGE,
+        SAGE_VIS,
         SIGS,
         TEAL,
         VIRUSINTERPRETER,
@@ -88,8 +95,10 @@ class Constants {
         // REDUX
         BAM_REDUX,
         CRAM_REDUX,
+        REDUX_BQR_TSV,
         REDUX_JITTER_TSV,
         REDUX_MS_TSV,
+        REDUX_BQR_PLOT,
 
         // Process
         AMBER_DIR,
