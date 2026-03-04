@@ -17,9 +17,9 @@ workflow SAGE_CALLING {
     ch_tumor_bam                 // channel: [mandatory] [ meta, bam, bai ]
     ch_normal_bam                // channel: [mandatory] [ meta, bam, bai ]
     ch_donor_bam                 // channel: [mandatory] [ meta, bam, bai ]
-    ch_tumor_tsv                 // channel: [mandatory] [ meta, dup_freq_tsv, jitter_tsv, ms_tsv ]
-    ch_normal_tsv                // channel: [mandatory] [ meta, dup_freq_tsv, jitter_tsv, ms_tsv ]
-    ch_donor_tsv                 // channel: [mandatory] [ meta, dup_freq_tsv, jitter_tsv, ms_tsv ]
+    ch_tumor_tsv                 // channel: [mandatory] [ meta, bqr_tsv, jitter_tsv, ms_tsv ]
+    ch_normal_tsv                // channel: [mandatory] [ meta, bqr_tsv, jitter_tsv, ms_tsv ]
+    ch_donor_tsv                 // channel: [mandatory] [ meta, bqr_tsv, jitter_tsv, ms_tsv ]
 
     // Reference data
     genome_fasta                 // channel: [mandatory] /path/to/genome_fasta
@@ -34,6 +34,9 @@ workflow SAGE_CALLING {
     driver_gene_panel            // channel: [mandatory] /path/to/driver_gene_panel
     ensembl_data_resources       // channel: [mandatory] /path/to/ensembl_data_resources/
     gnomad_resource              // channel: [mandatory] /path/to/gnomad_resource
+
+    // Params
+    sequencing_type              // string:  [mandatory] sequencing type
     enable_germline              // boolean: [mandatory] Enable germline mode
     targeted_mode                // boolean: [mandatory] Set targeted mode
 
@@ -54,41 +57,36 @@ workflow SAGE_CALLING {
         ch_donor_tsv,
     )
         .map { meta,
-            tumor_bam,  tumor_bai,
-            normal_bam, normal_bai,
-            donor_bam,  donor_bai,
+            tumor_bam , tumor_bai , tumor_bqr_tsv , tumor_jitter_tsv , tumor_ms_tsv,
+            normal_bam, normal_bai, normal_bqr_tsv, normal_jitter_tsv, normal_ms_tsv,
+            donor_bam , donor_bai , donor_bqr_tsv , donor_jitter_tsv , donor_ms_tsv ->
 
-            tumor_dup_freq_tsv,  tumor_jitter_tsv,  tumor_ms_tsv,
-            normal_dup_freq_tsv, normal_jitter_tsv, normal_ms_tsv,
-            donor_dup_freq_tsv,  donor_jitter_tsv,  donor_ms_tsv ->
+            tumor_bam = Utils.selectCurrentOrExisting(tumor_bam, meta, Constants.INPUT.BAM_REDUX_DNA_TUMOR)
+            tumor_bai = tumor_bai ?: Utils.getInput(meta, Constants.INPUT.BAI_DNA_TUMOR)
 
-            def redux_tsv_list = [
+            normal_bam = Utils.selectCurrentOrExisting(normal_bam, meta, Constants.INPUT.BAM_REDUX_DNA_NORMAL)
+            normal_bai = normal_bai ?: Utils.getInput(meta, Constants.INPUT.BAI_DNA_NORMAL)
+
+            donor_bam = Utils.selectCurrentOrExisting(donor_bam, meta, Constants.INPUT.BAM_REDUX_DNA_DONOR)
+            donor_bai = donor_bai ?: Utils.getInput(meta, Constants.INPUT.BAI_DNA_DONOR)
+
+            def redux_tsvs = [
+                tumor_bqr_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_BQR_TSV_TUMOR),
                 tumor_jitter_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_JITTER_TSV_TUMOR),
                 tumor_ms_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_MS_TSV_TUMOR),
 
+                normal_bqr_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_BQR_TSV_NORMAL),
                 normal_jitter_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_JITTER_TSV_NORMAL),
                 normal_ms_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_MS_TSV_NORMAL),
 
+                donor_bqr_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_BQR_TSV_DONOR),
                 donor_jitter_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_JITTER_TSV_DONOR),
                 donor_ms_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_MS_TSV_DONOR),
             ]
 
-            redux_tsv_list = redux_tsv_list.findAll{ it != [] }
+            redux_tsvs = redux_tsvs.findAll { it != [] }
 
-            return [
-                meta,
-
-                Utils.selectCurrentOrExisting(tumor_bam, meta, Constants.INPUT.BAM_REDUX_DNA_TUMOR),
-                tumor_bai ?: Utils.getInput(meta, Constants.INPUT.BAI_DNA_TUMOR),
-
-                Utils.selectCurrentOrExisting(normal_bam, meta, Constants.INPUT.BAM_REDUX_DNA_NORMAL),
-                normal_bai ?: Utils.getInput(meta, Constants.INPUT.BAI_DNA_NORMAL),
-
-                Utils.selectCurrentOrExisting(donor_bam, meta, Constants.INPUT.BAM_REDUX_DNA_DONOR),
-                donor_bai ?: Utils.getInput(meta, Constants.INPUT.BAI_DNA_DONOR),
-
-                redux_tsv_list,
-            ]
+            return [ meta, tumor_bam, tumor_bai, normal_bam, normal_bai, donor_bam, donor_bai, redux_tsvs ]
         }
         .branch { meta, tumor_bam, tumor_bai, normal_bam, normal_bai, donor_bam, donor_bai, redux_tsvs ->
             runnable: tumor_bam
@@ -138,6 +136,7 @@ workflow SAGE_CALLING {
         sage_highconf_regions,
         driver_gene_panel,
         ensembl_data_resources,
+        sequencing_type,
         targeted_mode,
     )
 
@@ -196,6 +195,7 @@ workflow SAGE_CALLING {
         driver_gene_panel,
         ensembl_data_resources,
         gnomad_resource,
+        sequencing_type,
         targeted_mode,
     )
 

@@ -208,6 +208,44 @@ workflow PREPARE_REFERENCE {
 
         }
 
+        // Set PON paths
+        def sequencing_type = Enums.getEnumFromString(params.sequencing_type, Constants.SequencingType)
+
+        if(sequencing_type === Constants.SequencingType.ULTIMA) {
+
+            ch_hmf_data = ch_hmf_data
+                .map { d ->
+                    if (d.sage_pon_ultima)
+                        d.sage_pon = d.sage_pon_ultima
+
+                    if (d.esvee_pon_breakends_ultima)
+                        d.esvee_pon_breakends = d.esvee_pon_breakends_ultima
+
+                    if (d.esvee_pon_breakpoints_ultima)
+                        d.esvee_pon_breakpoints = d.esvee_pon_breakpoints_ultima
+
+                    return d
+                }
+
+        } else if(sequencing_type === Constants.SequencingType.SBX) {
+
+            ch_hmf_data = ch_hmf_data
+                .map { d ->
+                    if (d.sage_pon_sbx)
+                        d.sage_pon = d.sage_pon_sbx
+
+                    if (d.esvee_pon_breakends_sbx)
+                        d.esvee_pon_breakends = d.esvee_pon_breakends_sbx
+
+                    if (d.esvee_pon_breakpoints_sbx)
+                        d.esvee_pon_breakpoints = d.esvee_pon_breakpoints_sbx
+
+                    return d
+                }
+
+        }
+
+        // Set custom driver gene panel
         if (params.driver_gene_panel) {
 
             def run_mode = Utils.getEnumFromString(params.mode, Constants.RunMode)
@@ -260,7 +298,7 @@ workflow PREPARE_REFERENCE {
     //
     // Write prepared reference data if requested
     //
-    if (prep_config.prepare_ref_data_only || params.prepare_reference_only) {
+    if (prepare_reference_only) {
 
         WRITE_FASTA(ch_genome_fasta)
         WRITE_FAI(ch_genome_fai)

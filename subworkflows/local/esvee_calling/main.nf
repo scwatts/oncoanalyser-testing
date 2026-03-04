@@ -27,6 +27,8 @@ workflow ESVEE_CALLING {
     unmap_regions            // channel: [mandatory] /path/to/unmap_regions
     target_region_bed        // channel: [optional]  /path/to/target_region_bed
 
+    sequencing_type          // string:  [mandatory] sequencing type
+
     main:
     // Channel for version.yml files
     ch_versions = Channel.empty()
@@ -91,6 +93,7 @@ workflow ESVEE_CALLING {
         repeatmasker_annotations,
         unmap_regions,
         target_region_bed,
+        sequencing_type,
     )
 
     ch_versions = ch_versions.mix(ESVEE.out.versions)

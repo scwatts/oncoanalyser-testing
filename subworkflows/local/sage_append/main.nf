@@ -14,7 +14,7 @@ workflow SAGE_APPEND {
     ch_inputs         // channel: [mandatory] [ meta ]
     ch_purple_dir     // channel: [mandatory] [ meta, purple_dir ]
     ch_tumor_dna_bam  // channel: [mandatory] [ meta, bam, bai ]
-    ch_tumor_dna_tsv  // channel: [mandatory] [ meta, dup_freq_tsv, jitter_tsv, ms_tsv ]
+    ch_tumor_dna_tsv  // channel: [mandatory] [ meta, bqr_tsv, jitter_tsv, ms_tsv ]
     ch_tumor_rna_bam  // channel: [mandatory] [ meta, bam, bai ]
 
     // Reference data
@@ -24,6 +24,7 @@ workflow SAGE_APPEND {
     genome_dict      // channel: [mandatory] /path/to/genome_dict
 
     // Params
+    sequencing_type  // string:  [mandatory] sequencing type
     enable_germline  // boolean: [mandatory] Enable germline
     targeted_mode    // boolean: [mandatory] Set targeted mode
 
@@ -32,7 +33,7 @@ workflow SAGE_APPEND {
     // channel: [ versions.yml ]
     ch_versions = Channel.empty()
 
-    def run_mode = Utils.getEnumFromString(params.mode, Constants.RunMode)
+    def run_mode = Enums.getEnumFromString(params.mode, Constants.RunMode)
     def purity_estimate_mode = run_mode === Constants.RunMode.PURITY_ESTIMATE
 
     // Select input sources and sort
@@ -44,24 +45,28 @@ workflow SAGE_APPEND {
         ch_tumor_rna_bam,
         ch_purple_dir,
     )
-        .map { meta, tumor_dna_bam, tumor_dna_bai, tumor_dna_dup_freq_tsv, tumor_dna_jitter_tsv, tumor_dna_ms_tsv, tumor_rna_bam, tumor_rna_bai, purple_dir ->
+        .map { meta,
+            tumor_dna_bam, tumor_dna_bai,
+            tumor_dna_bqr_tsv, tumor_dna_jitter_tsv, tumor_dna_ms_tsv,
+            tumor_rna_bam, tumor_rna_bai,
+            purple_dir ->
 
-            def tumor_dna_redux_tsv_list = [
+            tumor_dna_bam = Utils.selectCurrentOrExisting(tumor_dna_bam, meta, Constants.INPUT.BAM_REDUX_DNA_TUMOR)
+            tumor_dna_bai = tumor_dna_bai ?: Utils.getInput(meta, Constants.INPUT.BAI_DNA_TUMOR)
+
+            tumor_rna_bam = Utils.selectCurrentOrExisting(tumor_rna_bam, meta, Constants.INPUT.BAM_RNA_TUMOR)
+            tumor_rna_bai = tumor_rna_bai ?: Utils.getInput(meta, Constants.INPUT.BAI_RNA_TUMOR)
+
+            def tumor_dna_redux_tsv = [
+                tumor_dna_bqr_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_BQR_TSV_TUMOR),
                 tumor_dna_jitter_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_JITTER_TSV_TUMOR),
                 tumor_dna_ms_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_MS_TSV_TUMOR),
             ]
+            tumor_dna_redux_tsv = tumor_dna_redux_tsv.findAll { it != [] }
 
-            tumor_dna_redux_tsv_list = tumor_dna_redux_tsv_list.findAll { it != [] }
+            purple_dir = Utils.selectCurrentOrExisting(purple_dir, meta, Constants.INPUT.PURPLE_DIR)
 
-            return [
-                meta,
-                Utils.selectCurrentOrExisting(tumor_dna_bam, meta, Constants.INPUT.BAM_REDUX_DNA_TUMOR),
-                tumor_dna_bai ?: Utils.getInput(meta, Constants.INPUT.BAI_DNA_TUMOR),
-                tumor_dna_redux_tsv_list,
-                Utils.selectCurrentOrExisting(tumor_rna_bam, meta, Constants.INPUT.BAM_RNA_TUMOR),
-                tumor_rna_bai ?: Utils.getInput(meta, Constants.INPUT.BAI_RNA_TUMOR),
-                Utils.selectCurrentOrExisting(purple_dir, meta, Constants.INPUT.PURPLE_DIR),
-            ]
+            return [meta, tumor_dna_bam, tumor_dna_bai, tumor_dna_redux_tsv, tumor_rna_bam, tumor_rna_bai, purple_dir]
         }
         .branch { meta, tumor_dna_bam, tumor_dna_bai, tumor_dna_redux_tsv, tumor_rna_bam, tumor_rna_bai, purple_dir ->
             def has_bam = tumor_dna_bam || tumor_rna_bam
@@ -126,6 +131,7 @@ workflow SAGE_APPEND {
         genome_version,
         genome_fai,
         genome_dict,
+        sequencing_type,
         targeted_mode,
     )
 
@@ -200,6 +206,7 @@ workflow SAGE_APPEND {
         genome_version,
         genome_fai,
         genome_dict,
+        sequencing_type,
         targeted_mode,
     )
 
