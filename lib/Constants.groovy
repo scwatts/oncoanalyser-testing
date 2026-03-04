@@ -219,6 +219,18 @@ class Constants {
             SequenceType.DNA,
         ],
 
+        REDUX_BQR_TSV_TUMOR: [
+            FileType.REDUX_BQR_TSV,
+            SampleType.TUMOR,
+            SequenceType.DNA,
+        ],
+
+        REDUX_BQR_PLOT_TUMOR: [
+            FileType.REDUX_BQR_PLOT,
+            SampleType.TUMOR,
+            SequenceType.DNA,
+        ],
+
         BAM_REDUX_DNA_NORMAL: [
             FileType.BAM_REDUX,
             SampleType.NORMAL,
@@ -233,6 +245,18 @@ class Constants {
 
         REDUX_MS_TSV_NORMAL: [
             FileType.REDUX_MS_TSV,
+            SampleType.NORMAL,
+            SequenceType.DNA,
+        ],
+
+        REDUX_BQR_TSV_NORMAL: [
+            FileType.REDUX_BQR_TSV,
+            SampleType.NORMAL,
+            SequenceType.DNA,
+        ],
+
+        REDUX_BQR_PLOT_NORMAL: [
+            FileType.REDUX_BQR_PLOT,
             SampleType.NORMAL,
             SequenceType.DNA,
         ],
@@ -254,6 +278,12 @@ class Constants {
             SampleType.DONOR,
             SequenceType.DNA,
         ],
+
+        REDUX_BQR_TSV_DONOR: [
+            FileType.REDUX_BQR_TSV,
+            SampleType.DONOR,
+             SequenceType.DNA,
+         ],
 
 
         // Other tools
