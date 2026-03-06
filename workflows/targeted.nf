@@ -177,6 +177,9 @@ workflow TARGETED {
         ch_redux_dna_normal_tsv_out = ch_inputs.map { meta -> [meta, [], [], []] }
         ch_redux_dna_donor_tsv_out = ch_inputs.map { meta -> [meta, [], [], []] }
 
+        ch_redux_dna_tumor_plot_out = ch_inputs.map { meta -> [meta, []] }
+        ch_redux_dna_normal_plot_out = ch_inputs.map { meta -> [meta, []] }
+
     }
 
     //
