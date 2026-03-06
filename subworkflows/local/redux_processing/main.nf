@@ -124,15 +124,16 @@ workflow REDUX_PROCESSING {
     ch_redux_out = WorkflowOncoanalyser.groupByMeta(
         REDUX.out.bam,
         REDUX.out.bqr_tsv,
+        REDUX.out.dup_freq_tsv,
         REDUX.out.jitter_tsv,
         REDUX.out.ms_tsv,
         REDUX.out.bqr_plot,
     )
 
     // Sort into a tumor and normal channel
-    // channel: [ meta, bam, bai, bqr_tsv, jitter_tsv, ms_tsv, bqr_plot ]
+    // channel: [ meta, bam, bai, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv, bqr_plot ]
     ch_redux_out_sorted = ch_redux_out
-        .branch { meta, bam, bai, bqr_tsv, jitter_tsv, ms_tsv, bqr_plot ->
+        .branch { meta, bam, bai, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv, bqr_plot ->
             assert ['tumor', 'normal', 'donor'].contains(meta.sample_type)
             tumor: meta.sample_type == 'tumor'
             normal: meta.sample_type == 'normal'
@@ -164,9 +165,9 @@ workflow REDUX_PROCESSING {
     dna_normal_bam = ch_redux_normal_out.bam // channel: [ meta, bam, bai ]
     dna_donor_bam  = ch_redux_donor_out.bam  // channel: [ meta, bam, bai ]
 
-    dna_tumor_tsv  = ch_redux_tumor_out.tsv  // channel: [ meta, bqr_tsv, jitter_tsv, ms_tsv ]
-    dna_normal_tsv = ch_redux_normal_out.tsv // channel: [ meta, bqr_tsv, jitter_tsv, ms_tsv ]
-    dna_donor_tsv  = ch_redux_donor_out.tsv  // channel: [ meta, bqr_tsv, jitter_tsv, ms_tsv ]
+    dna_tumor_tsv  = ch_redux_tumor_out.tsv  // channel: [ meta, redux_tsv, ... ]
+    dna_normal_tsv = ch_redux_normal_out.tsv // channel: [ meta, redux_tsv, ... ]
+    dna_donor_tsv  = ch_redux_donor_out.tsv  // channel: [ meta, redux_tsv, ... ]
 
     dna_tumor_plot  = ch_redux_tumor_out.plot  // channel: [ meta, bqr_plot ]
     dna_normal_plot = ch_redux_normal_out.plot // channel: [ meta, bqr_plot ]
