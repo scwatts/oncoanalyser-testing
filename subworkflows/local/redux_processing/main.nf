@@ -151,7 +151,7 @@ workflow REDUX_PROCESSING {
             )
             .multiMap { meta, bam, bai, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv, bqr_plot ->
                 bam: [meta, bam, bai]
-                tsv: [meta, bqr_tsv, jitter_tsv, ms_tsv]
+                tsv: [meta, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv]
                 plot: [meta, bqr_plot]
             }
     }
