@@ -65,7 +65,7 @@ process PAVE_SOMATIC {
         -driver_gene_panel ${driver_gene_panel} \\
         -mappability_bed ${segment_mappability} \\
         -ensembl_data_dir ${ensembl_data_resources} \\
-        -sequencing_type ${sequencing_platform} \\
+        -sequencing_type ${sequencing_platform.toUpperCase()} \\
         -threads ${task.cpus} \\
         ${log_level_arg} \\
         -output_dir ./

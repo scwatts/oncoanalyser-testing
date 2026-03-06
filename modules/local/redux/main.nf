@@ -89,7 +89,7 @@ process REDUX {
         -ref_genome_msi_file ${msi_jitter_sites} \\
         -unmap_regions ${unmap_regions} \\
         -bamtool \$(which samtools) \\
-        -sequencing_type ${sequencing_platform} \\
+        -sequencing_type ${sequencing_platform.toUpperCase()} \\
         -bqr_write_plot \\
         ${form_consensus_arg} \\
         ${umi_args} \\

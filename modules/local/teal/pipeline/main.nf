@@ -64,7 +64,7 @@ process TEAL_PIPELINE {
         ${reference_wgs_metrics_arg} \\
         ${tumor_wgs_metrics_arg} \\
         -ref_genome_version ${genome_ver} \\
-        -sequencing_type ${sequencing_platform} \\
+        -sequencing_type ${sequencing_platform.toUpperCase()} \\
         -threads ${task.cpus} \\
         -output_dir teal/
 

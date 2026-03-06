@@ -53,7 +53,7 @@ process SAGE_GERMLINE {
         -driver_gene_panel ${driver_gene_panel} \\
         -high_confidence_bed ${sage_highconf_regions} \\
         -ensembl_data_dir ${ensembl_data_resources} \\
-        -sequencing_type ${sequencing_platform} \\
+        -sequencing_type ${sequencing_platform.toUpperCase()} \\
         -germline \\
         -panel_only \\
         ${high_depth_mode_arg} \\

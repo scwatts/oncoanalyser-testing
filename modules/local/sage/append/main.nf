@@ -47,7 +47,7 @@ process SAGE_APPEND {
         -reference_bam ${bams.join(',')} \\
         -ref_genome ${genome_fasta} \\
         -ref_genome_version ${genome_ver} \\
-        -sequencing_type ${sequencing_platform} \\
+        -sequencing_type ${sequencing_platform.toUpperCase()} \\
         -write_frag_lengths \\
         ${high_depth_mode_arg} \\
         ${skip_args} \\

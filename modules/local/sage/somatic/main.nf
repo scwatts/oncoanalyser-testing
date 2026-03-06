@@ -89,7 +89,7 @@ process SAGE_SOMATIC {
         -driver_gene_panel ${driver_gene_panel} \\
         -high_confidence_bed ${sage_highconf_regions} \\
         -ensembl_data_dir ${ensembl_data_resources} \\
-        -sequencing_type ${sequencing_platform} \\
+        -sequencing_type ${sequencing_platform.toUpperCase()} \\
         -include_mt \\
         ${tinc_args} \\
         ${high_depth_mode_arg} \\

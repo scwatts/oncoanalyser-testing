@@ -50,7 +50,7 @@ process PAVE_GERMLINE {
         -blacklist_bed ${sage_blocklist_regions} \\
         -blacklist_vcf ${sage_blocklist_sites} \\
         -gnomad_no_filter \\
-        -sequencing_type ${sequencing_platform} \\
+        -sequencing_type ${sequencing_platform.toUpperCase()} \\
         -threads ${task.cpus} \\
         ${log_level_arg} \\
         -output_dir ./

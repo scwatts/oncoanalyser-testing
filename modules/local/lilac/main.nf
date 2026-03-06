@@ -54,7 +54,7 @@ process LILAC {
         -ref_genome_version ${genome_ver} \\
         -resource_dir ${lilac_resources} \\
         -freq_score_penalty ${freq_score_penalty} \\
-        -sequencing_type ${sequencing_platform} \\
+        -sequencing_type ${sequencing_platform.toUpperCase()} \\
         -threads ${task.cpus} \\
         ${log_level_arg} \\
         -output_dir lilac/
