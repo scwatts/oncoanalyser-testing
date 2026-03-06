@@ -142,14 +142,14 @@ workflow REDUX_PROCESSING {
         }
 
     // Set outputs, restoring original meta, split by file type
-    // channel: [ meta, bam, bai, bqr_tsv, jitter_tsv, ms_tsv, bqr_plot ]
+    // channel: [ meta, bam, bai, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv, bqr_plot ]
     def createOutputChannels = { ch_redux_out_sample_type, ch_sample_type_skip ->
         return Channel.empty()
             .mix(
                 WorkflowOncoanalyser.restoreMeta(ch_redux_out_sample_type, ch_inputs),
-                ch_sample_type_skip.map { meta -> [meta, [], [], [], [], [], []] },
+                ch_sample_type_skip.map { meta -> [meta, [], [], [], [], [], [], []] },
             )
-            .multiMap { meta, bam, bai, bqr_tsv, jitter_tsv, ms_tsv, bqr_plot ->
+            .multiMap { meta, bam, bai, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv, bqr_plot ->
                 bam: [meta, bam, bai]
                 tsv: [meta, bqr_tsv, jitter_tsv, ms_tsv]
                 plot: [meta, bqr_plot]
