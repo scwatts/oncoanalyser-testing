@@ -99,6 +99,12 @@ workflow ESVEE_CALLING {
     ch_versions = ch_versions.mix(ESVEE.out.versions)
 
     // Set outputs, restoring original meta
+    ch_esvee_dir_out = Channel.empty()
+        .mix(
+            WorkflowOncoanalyser.restoreMeta(ESVEE.out.esvee_dir, ch_inputs),
+            ch_inputs_sorted.skip.map { meta -> [meta, []] }
+        )
+
     ch_somatic_out = Channel.empty()
         .mix(
             WorkflowOncoanalyser.restoreMeta(ESVEE.out.somatic_vcf, ch_inputs),
@@ -119,6 +125,7 @@ workflow ESVEE_CALLING {
         )
 
     emit:
+    esvee_dir      = ch_esvee_dir_out  // channel: [ meta, esvee_dir ]
     somatic_vcf    = ch_somatic_out    // channel: [ meta, vcf, tbi ]
     germline_vcf   = ch_germline_out   // channel: [ meta, vcf, tbi ]
     unfiltered_vcf = ch_unfiltered_out // channel: [ meta, vcf, tbi ]

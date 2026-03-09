@@ -230,6 +230,37 @@ workflow WGTS {
     }
 
     //
+    // SUBWORKFLOW: Run Bam Tools to generate stats required for downstream processes
+    //
+    // channel: [ meta, metrics_dir ]
+    ch_bamtools_somatic_out = Channel.empty()
+    ch_bamtools_germline_out = Channel.empty()
+    if (run_config.stages.bamtools) {
+
+        BAMTOOLS_METRICS(
+            ch_inputs,
+            ch_redux_dna_tumor_bam_out,
+            ch_redux_dna_normal_bam_out,
+            ref_data.genome_fasta,
+            ref_data.genome_version,
+            hmf_data.driver_gene_panel,
+            hmf_data.ensembl_data_resources,
+            [], // target_region_bed
+        )
+
+        ch_versions = ch_versions.mix(BAMTOOLS_METRICS.out.versions)
+
+        ch_bamtools_somatic_out = ch_bamtools_somatic_out.mix(BAMTOOLS_METRICS.out.somatic)
+        ch_bamtools_germline_out = ch_bamtools_germline_out.mix(BAMTOOLS_METRICS.out.germline)
+
+    } else {
+
+        ch_bamtools_somatic_out = ch_inputs.map { meta -> [meta, []] }
+        ch_bamtools_germline_out = ch_inputs.map { meta -> [meta, []] }
+
+    }
+
+    //
     // SUBWORKFLOW: Run AMBER to obtain b-allele frequencies
     //
     // channel: [ meta, amber_dir ]
@@ -288,6 +319,8 @@ workflow WGTS {
     //
     // SUBWORKFLOW: Call structural variants with ESVEE
     //
+    // channel: [ meta, esvee_dir ]
+    ch_esvee_dir_out = Channel.empty()
     // channel: [ meta, esvee_vcf ]
     ch_esvee_germline_out = Channel.empty()
     ch_esvee_somatic_out = Channel.empty()
@@ -314,11 +347,13 @@ workflow WGTS {
 
         ch_versions = ch_versions.mix(ESVEE_CALLING.out.versions)
 
+        ch_esvee_dir_out = ch_esvee_dir_out.mix(ESVEE_CALLING.out.esvee_dir)
         ch_esvee_germline_out = ch_esvee_germline_out.mix(ESVEE_CALLING.out.germline_vcf)
         ch_esvee_somatic_out = ch_esvee_somatic_out.mix(ESVEE_CALLING.out.somatic_vcf)
 
     } else {
 
+        ch_esvee_dir_out = ch_inputs.map { meta -> [meta, []] }
         ch_esvee_germline_out = ch_inputs.map { meta -> [meta, [], []] }
         ch_esvee_somatic_out = ch_inputs.map { meta -> [meta, [], []] }
 
@@ -601,37 +636,6 @@ workflow WGTS {
     } else {
 
         ch_linx_somatic_visualiser_dir_out = ch_inputs.map { meta -> [meta, []] }
-
-    }
-
-    //
-    // SUBWORKFLOW: Run Bam Tools to generate stats required for downstream processes
-    //
-    // channel: [ meta, metrics_dir ]
-    ch_bamtools_somatic_out = Channel.empty()
-    ch_bamtools_germline_out = Channel.empty()
-    if (run_config.stages.bamtools) {
-
-        BAMTOOLS_METRICS(
-            ch_inputs,
-            ch_redux_dna_tumor_bam_out,
-            ch_redux_dna_normal_bam_out,
-            ref_data.genome_fasta,
-            ref_data.genome_version,
-            hmf_data.driver_gene_panel,
-            hmf_data.ensembl_data_resources,
-            [], // target_region_bed
-        )
-
-        ch_versions = ch_versions.mix(BAMTOOLS_METRICS.out.versions)
-
-        ch_bamtools_somatic_out = ch_bamtools_somatic_out.mix(BAMTOOLS_METRICS.out.somatic)
-        ch_bamtools_germline_out = ch_bamtools_germline_out.mix(BAMTOOLS_METRICS.out.germline)
-
-    } else {
-
-        ch_bamtools_somatic_out = ch_inputs.map { meta -> [meta, []] }
-        ch_bamtools_germline_out = ch_inputs.map { meta -> [meta, []] }
 
     }
 
