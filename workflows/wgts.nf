@@ -320,7 +320,7 @@ workflow WGTS {
     // SUBWORKFLOW: Call structural variants with ESVEE
     //
     // channel: [ meta, esvee_dir ]
-    ch_esvee_dir_out = Channel.empty()
+    ch_esvee_out = Channel.empty()
     // channel: [ meta, esvee_vcf ]
     ch_esvee_germline_out = Channel.empty()
     ch_esvee_somatic_out = Channel.empty()
@@ -347,13 +347,13 @@ workflow WGTS {
 
         ch_versions = ch_versions.mix(ESVEE_CALLING.out.versions)
 
-        ch_esvee_dir_out = ch_esvee_dir_out.mix(ESVEE_CALLING.out.esvee_dir)
+        ch_esvee_out = ch_esvee_out.mix(ESVEE_CALLING.out.esvee_dir)
         ch_esvee_germline_out = ch_esvee_germline_out.mix(ESVEE_CALLING.out.germline_vcf)
         ch_esvee_somatic_out = ch_esvee_somatic_out.mix(ESVEE_CALLING.out.somatic_vcf)
 
     } else {
 
-        ch_esvee_dir_out = ch_inputs.map { meta -> [meta, []] }
+        ch_esvee_out = ch_inputs.map { meta -> [meta, []] }
         ch_esvee_germline_out = ch_inputs.map { meta -> [meta, [], []] }
         ch_esvee_somatic_out = ch_inputs.map { meta -> [meta, [], []] }
 
