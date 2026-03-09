@@ -43,33 +43,33 @@ workflow QSEE_METRICS {
             purple_dir ->
 
             def tumor_redux_tsvs = [
-                tumor_bqr_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_BQR_TSV_TUMOR),
-                tumor_jitter_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_JITTER_TSV_TUMOR),
-                tumor_ms_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_MS_TSV_TUMOR),
+                tumor_bqr_tsv ?: Utils.getInput(tumor_bqr_tsv, meta, Constants.INPUT.REDUX_BQR_TSV_TUMOR),
+                tumor_jitter_tsv ?: Utils.getInput(tumor_jitter_tsv, meta, Constants.INPUT.REDUX_JITTER_TSV_TUMOR),
+                tumor_ms_tsv ?: Utils.getInput(tumor_ms_tsv, meta, Constants.INPUT.REDUX_MS_TSV_TUMOR),
             ]
 
             def normal_redux_tsvs = [
-                normal_bqr_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_BQR_TSV_NORMAL),
-                normal_jitter_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_JITTER_TSV_NORMAL),
-                normal_ms_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_MS_TSV_NORMAL),
+                normal_bqr_tsv ?: Utils.getInput(normal_bqr_tsv, meta, Constants.INPUT.REDUX_BQR_TSV_NORMAL),
+                normal_jitter_tsv ?: Utils.getInput(normal_jitter_tsv, meta, Constants.INPUT.REDUX_JITTER_TSV_NORMAL),
+                normal_ms_tsv ?: Utils.getInput(normal_ms_tsv, meta, Constants.INPUT.REDUX_MS_TSV_NORMAL),
             ]
 
             tumor_redux_tsvs = tumor_redux_tsvs.findAll { it != [] }
             normal_redux_tsvs = normal_redux_tsvs.findAll { it != [] }
 
             return [
+                meta,
                 tumor_redux_tsvs,
                 normal_redux_tsvs,
-                .selectCurrentOrExisting(bamtools_tumor_dir, meta, Constants.INPUT.BAMTOOLS_DIR_TUMOR)
-                Utils.selectCurrentOrExisting(bamtools_normal_dir, meta, Constants.INPUT.BAMTOOLS_DIR_NORMAL)
-                Utils.selectCurrentOrExisting(cobalt_dir, meta, Constants.INPUT.COBALT_DIR)
-                Utils.selectCurrentOrExisting(esvee_dir, meta, Constants.INPUT.ESVEE_DIR)
-                Utils.selectCurrentOrExisting(purple_dir, meta, Constants.INPUT.PURPLE_DIR)
+                Utils.selectCurrentOrExisting(bamtools_tumor_dir, meta, Constants.INPUT.BAMTOOLS_DIR_TUMOR),
+                Utils.selectCurrentOrExisting(bamtools_normal_dir, meta, Constants.INPUT.BAMTOOLS_DIR_NORMAL),
+                Utils.selectCurrentOrExisting(cobalt_dir, meta, Constants.INPUT.COBALT_DIR),
+                Utils.selectCurrentOrExisting(esvee_dir, meta, Constants.INPUT.ESVEE_DIR),
+                Utils.selectCurrentOrExisting(purple_dir, meta, Constants.INPUT.PURPLE_DIR),
             ]
         }
         .branch { meta, tumor_redux_tsvs, normal_redux_tsvs, bamtools_tumor_dir, bamtools_normal_dir, cobalt_dir, esvee_dir, purple_dir ->
             runnable: bamtools_tumor_dir && purple_dir
-                return inputs
             skip: true
                 return meta
         }
