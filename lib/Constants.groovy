@@ -100,6 +100,7 @@ class Constants {
         AMBER_DIR,
         BAMTOOLS_DIR,
         COBALT_DIR,
+        ESVEE_DIR,
         ESVEE_VCF,
         ESVEE_VCF_TBI,
         ISOFOX_DIR,
@@ -363,6 +364,11 @@ class Constants {
             SequenceType.DNA,
         ],
 
+        ESVEE_DIR: [
+            FileType.ESVEE_DIR,
+            [SampleType.TUMOR, SampleType.TUMOR_NORMAL],
+            SequenceType.DNA,
+        ],
         ESVEE_VCF_TUMOR: [
             FileType.ESVEE_VCF,
             [SampleType.TUMOR, SampleType.TUMOR_NORMAL],
