@@ -25,7 +25,7 @@ process SAGE_VISUALISER {
     path ensembl_data_resources
 
     output:
-    tuple val(meta), path('sage_vis/')                         , topic: sage_vis_dir
+    tuple val(meta), path('sage_vis/')                         , topic: sage_visualiser_dir
     tuple val(meta), val('sage_visualiser'), path('.command.*'), topic: command_files
     path 'versions.yml'                                        , topic: versions
 
