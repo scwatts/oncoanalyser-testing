@@ -66,7 +66,7 @@ workflow SAGE_PLOTTING {
                 donor_ms_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_MS_TSV_DONOR),
             ]
 
-            redux_tsvs = redux_tsvs.findAll { it != [] }
+            redux_tsvs = redux_tsvs.findAll { it -> it != [] }
 
             purple_dir = Utils.selectCurrentOrExisting(purple_dir, meta, Constants.INPUT.PURPLE_DIR)
 

@@ -50,8 +50,8 @@ workflow QSEE_METRICS {
                 normal_ms_tsv ?: Utils.getInput(normal_ms_tsv, meta, Constants.INPUT.REDUX_MS_TSV_NORMAL),
             ]
 
-            tumor_redux_tsvs = tumor_redux_tsvs.findAll { it != [] }
-            normal_redux_tsvs = normal_redux_tsvs.findAll { it != [] }
+            tumor_redux_tsvs = tumor_redux_tsvs.findAll { it -> it != [] }
+            normal_redux_tsvs = normal_redux_tsvs.findAll { it -> it != [] }
 
             return [
                 meta,

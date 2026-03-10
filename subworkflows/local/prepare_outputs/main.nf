@@ -36,7 +36,7 @@ workflow PREPARE_OUTPUTS_WGTS {
             channel.topic('peach_dir').map { meta, d ->                    return ["${meta.key}/${d.name}", d] },
             channel.topic('purple_dir').map { meta, d ->                   return ["${meta.key}/${d.name}", d] },
             channel.topic('qsee_dir').map { meta, d ->                     return ["${meta.key}/qsee", d] },
-            channel.topic('redux_bam').flatMap { def meta = it[0];         return it[1..-1].collect { d -> ["${meta.key}/alignments/dna/${d.name}", d] } },
+            channel.topic('redux_bam').flatMap { it -> def meta = it[0];   return it[1..-1].collect { d -> ["${meta.key}/alignments/dna/${d.name}", d] } },
             channel.topic('redux_bqr_tsv').map { meta, d ->                return ["${meta.key}/alignments/dna/${d.name}", d] },
             channel.topic('redux_bqr_plot').map { meta, d ->               return ["${meta.key}/alignments/dna/${d.name}", d] },
             channel.topic('redux_dup_freq_tsv').map { meta, d ->           return ["${meta.key}/alignments/dna/${d.name}", d] },
@@ -58,7 +58,7 @@ workflow PREPARE_OUTPUTS_WGTS {
 
             channel.topic('command_files').flatMap { get_command_log_filepath(it) }
         )
-        .flatMap { meta, d -> return d instanceof List ? d.collect { [meta, it] } : [[meta, d]] }
+        .flatMap { meta, d -> return d instanceof List ? d.collect { it -> [meta, it] } : [[meta, d]] }
 
     emit:
     results = ch_results
@@ -91,7 +91,7 @@ workflow PREPARE_OUTPUTS_TARGETED {
             channel.topic('peach_dir').map { meta, d ->                    return ["${meta.key}/${d.name}", d] },
             channel.topic('purple_dir').map { meta, d ->                   return ["${meta.key}/${d.name}", d] },
             channel.topic('qsee_dir').map { meta, d ->                     return ["${meta.key}/qsee", d] },
-            channel.topic('redux_bam').flatMap { def meta = it[0];         return it[1..-1].collect { d -> ["${meta.key}/alignments/dna/${d.name}", d] } },
+            channel.topic('redux_bam').flatMap { it -> def meta = it[0];   return it[1..-1].collect { d -> ["${meta.key}/alignments/dna/${d.name}", d] } },
             channel.topic('redux_bqr_tsv').map { meta, d ->                return ["${meta.key}/alignments/dna/${d.name}", d] },
             channel.topic('redux_bqr_plot').map { meta, d ->               return ["${meta.key}/alignments/dna/${d.name}", d] },
             channel.topic('redux_dup_freq_tsv').map { meta, d ->           return ["${meta.key}/alignments/dna/${d.name}", d] },
@@ -106,7 +106,7 @@ workflow PREPARE_OUTPUTS_TARGETED {
 
             channel.topic('command_files').flatMap { get_command_log_filepath(it) }
         )
-        .flatMap { meta, d -> return d instanceof List ? d.collect { [meta, it] } : [[meta, d]] }
+        .flatMap { meta, d -> return d instanceof List ? d.collect { it -> [meta, it] } : [[meta, d]] }
 
     emit:
     results = ch_results
@@ -117,22 +117,22 @@ workflow PREPARE_OUTPUTS_PURITY_ESTIMATE {
     main:
     ch_results = channel.empty()
         .mix(
-            channel.topic('amber_dir').map { meta, d ->            return ["${meta.key}/${d.name}", d] },
-            channel.topic('cobalt_dir').map { meta, d ->           return ["${meta.key}/${d.name}", d] },
-            channel.topic('redux_bam').flatMap { def meta = it[0]; return it[1..-1].collect { d -> ["${meta.key}/alignments/dna/${d.name}", d] } },
-            channel.topic('redux_bqr_tsv').map { meta, d ->        return ["${meta.key}/alignments/dna/${d.name}", d] },
-            channel.topic('redux_bqr_plot').map { meta, d ->       return ["${meta.key}/alignments/dna/${d.name}", d] },
-            channel.topic('redux_dup_freq_tsv').map { meta, d ->   return ["${meta.key}/alignments/dna/${d.name}", d] },
-            channel.topic('redux_jitter_tsv').map { meta, d ->     return ["${meta.key}/alignments/dna/${d.name}", d] },
-            channel.topic('redux_ms_tsv').map { meta, d ->         return ["${meta.key}/alignments/dna/${d.name}", d] },
-            channel.topic('sage_append_dir').map { meta, d ->      return ["${meta.key}/${d.name}", d] },
-            channel.topic('wisp_dir').map { meta, d ->             return ["${meta.key}/${d.name}", d] },
+            channel.topic('amber_dir').map { meta, d ->                  return ["${meta.key}/${d.name}", d] },
+            channel.topic('cobalt_dir').map { meta, d ->                 return ["${meta.key}/${d.name}", d] },
+            channel.topic('redux_bam').flatMap { it -> def meta = it[0]; return it[1..-1].collect { d -> ["${meta.key}/alignments/dna/${d.name}", d] } },
+            channel.topic('redux_bqr_tsv').map { meta, d ->              return ["${meta.key}/alignments/dna/${d.name}", d] },
+            channel.topic('redux_bqr_plot').map { meta, d ->             return ["${meta.key}/alignments/dna/${d.name}", d] },
+            channel.topic('redux_dup_freq_tsv').map { meta, d ->         return ["${meta.key}/alignments/dna/${d.name}", d] },
+            channel.topic('redux_jitter_tsv').map { meta, d ->           return ["${meta.key}/alignments/dna/${d.name}", d] },
+            channel.topic('redux_ms_tsv').map { meta, d ->               return ["${meta.key}/alignments/dna/${d.name}", d] },
+            channel.topic('sage_append_dir').map { meta, d ->            return ["${meta.key}/${d.name}", d] },
+            channel.topic('wisp_dir').map { meta, d ->                   return ["${meta.key}/${d.name}", d] },
 
             channel.topic('write_reference_data').map { d ->       return ["reference_data/${workflow.manifest.version}/", d] },
 
             channel.topic('command_files').flatMap { get_command_log_filepath(it) }
         )
-        .flatMap { meta, d -> return d instanceof List ? d.collect { [meta, it] } : [[meta, d]] }
+        .flatMap { meta, d -> return d instanceof List ? d.collect { it -> [meta, it] } : [[meta, d]] }
 
     emit:
     results = ch_results
@@ -148,7 +148,7 @@ workflow PREPARE_OUTPUTS_PANEL_RESOURCE_CREATION {
             channel.topic('gatk4_markduplicates_bai').map { meta, d ->    return ["${meta.key}/alignments/rna/${d.name}", d] },
             channel.topic('gatk4_markduplicates_bam').map { meta, d ->    return ["${meta.key}/alignments/rna/${d.name}", d] },
             channel.topic('isofox_dir').map { meta, d ->                  return ["${meta.key}/${d.name}", d] },
-            channel.topic('redux_bam').flatMap { def meta = it[0];        return it[1..-1].collect { d -> ["${meta.key}/alignments/dna/${d.name}", d] } },
+            channel.topic('redux_bam').flatMap { it -> def meta = it[0];  return it[1..-1].collect { d -> ["${meta.key}/alignments/dna/${d.name}", d] } },
             channel.topic('redux_bqr_tsv').map { meta, d ->               return ["${meta.key}/alignments/dna/${d.name}", d] },
             channel.topic('redux_bqr_plot').map { meta, d ->              return ["${meta.key}/alignments/dna/${d.name}", d] },
             channel.topic('redux_dup_freq_tsv').map { meta, d ->          return ["${meta.key}/alignments/dna/${d.name}", d] },
@@ -165,7 +165,7 @@ workflow PREPARE_OUTPUTS_PANEL_RESOURCE_CREATION {
 
             channel.topic('command_files').flatMap { get_command_log_filepath(it) }
         )
-        .flatMap { meta, d -> return d instanceof List ? d.collect { [meta, it] } : [[meta, d]] }
+        .flatMap { meta, d -> return d instanceof List ? d.collect { it -> [meta, it] } : [[meta, d]] }
 
     emit:
     results = ch_results
@@ -194,7 +194,7 @@ def get_command_log_filepath(data) {
 
     def (meta, name, fps_all) = data
 
-    def fps = fps_all.findAll { it.name.matches(/.*\.command\.(sh|out|err|log|run)/) }
+    def fps = fps_all.findAll { it -> it.name.matches(/.*\.command\.(sh|out|err|log|run)/) }
 
     if (decom_logs.contains(name)) {
         return fps.collect { d -> ["logs/other/${name}.${meta.id}${d.name}", d] }

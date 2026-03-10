@@ -96,7 +96,7 @@ workflow PREPARE_REFERENCE {
         } else if (params.ref_data_genome_bwamem2_index.endsWith('.tar.gz')) {
 
             ch_genome_bwamem2_index_inputs = channel.of(params.ref_data_genome_bwamem2_index)
-                .map { def fp = file(it); return [[topic_key: it, id: "${fp.name.replaceAll('\\.tar\\.gz$', '')}"], fp] }
+                .map { it -> def fp = file(it); return [[topic_key: it, id: "${fp.name.replaceAll('\\.tar\\.gz$', '')}"], fp] }
 
             DECOMP_BWAMEM2_INDEX(ch_genome_bwamem2_index_inputs)
             ch_genome_bwamem2_index = channel.topic('extracted_dir')
@@ -134,7 +134,7 @@ workflow PREPARE_REFERENCE {
         } else if (params.ref_data_genome_gridss_index.endsWith('.tar.gz')) {
 
             ch_genome_gridss_index_inputs = channel.of(params.ref_data_genome_gridss_index)
-                .map { def fp = file(it); return [[topic_key: it, id: "${fp.name.replaceAll('\\.tar\\.gz$', '')}"], fp] }
+                .map { it -> def fp = file(it); return [[topic_key: it, id: "${fp.name.replaceAll('\\.tar\\.gz$', '')}"], fp] }
 
             DECOMP_GRIDSS_INDEX(ch_genome_gridss_index_inputs)
             ch_genome_gridss_index = channel.topic('extracted_dir')
@@ -165,7 +165,7 @@ workflow PREPARE_REFERENCE {
         } else if (params.ref_data_genome_star_index.endsWith('.tar.gz')) {
 
             ch_genome_star_index_inputs = channel.of(params.ref_data_genome_star_index)
-                .map { def fp = file(it); return [[topic_key: it, id: "${fp.name.replaceAll('\\.tar\\.gz$', '')}"], fp] }
+                .map { it -> def fp = file(it); return [[topic_key: it, id: "${fp.name.replaceAll('\\.tar\\.gz$', '')}"], fp] }
 
             DECOMP_STAR_INDEX(ch_genome_star_index_inputs)
             ch_genome_star_index = channel.topic('extracted_dir')
@@ -190,7 +190,7 @@ workflow PREPARE_REFERENCE {
         if (params.ref_data_hmf_data_path.endsWith('tar.gz')) {
 
             ch_hmf_data_inputs = channel.of(params.ref_data_hmf_data_path)
-                .map { def fp = file(it); [[topic_key: it, id: "${fp.name.replaceAll('\\.tar\\.gz$', '')}"], fp] }
+                .map { it -> def fp = file(it); [[topic_key: it, id: "${fp.name.replaceAll('\\.tar\\.gz$', '')}"], fp] }
 
             DECOMP_HMF_DATA(ch_hmf_data_inputs)
 
@@ -276,7 +276,7 @@ workflow PREPARE_REFERENCE {
         if (params.ref_data_panel_data_path.endsWith('tar.gz')) {
 
             ch_panel_data_inputs = channel.of(params.ref_data_panel_data_path)
-                .map { def fp = file(it); [[topic_key: it, id: "${fp.name.replaceAll('\\.tar\\.gz$', '')}"], fp] }
+                .map { it -> def fp = file(it); [[topic_key: it, id: "${fp.name.replaceAll('\\.tar\\.gz$', '')}"], fp] }
 
             DECOMP_PANEL_DATA(ch_panel_data_inputs)
 
@@ -348,10 +348,10 @@ def getRefdataFile(filepath, ref_data_path) {
 def getDataBaseDirectory(data) {
     def c = []
     data
-        .findAll { it.value }
-        .collect { it.value.toUriString().getChars() }
+        .findAll { it -> it.value }
+        .collect { it -> it.value.toUriString().getChars() }
         .transpose()
-        .findIndexOf {
+        .findIndexOf { it ->
             def cs = it.unique()
             if (cs.size() != 1) return true
             c << cs.pop()

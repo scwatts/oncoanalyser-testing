@@ -54,7 +54,7 @@ workflow ESVEE_CALLING {
     ch_esvee_inputs = channel.empty()
         .mix(
             ch_inputs_sorted.runnable_tn,
-            ch_inputs_sorted.runnable_to.map { it + [[], []] },
+            ch_inputs_sorted.runnable_to.map { it -> it + [[], []] },
         )
         .map { meta, tumor_bam, tumor_bai, normal_bam, normal_bai ->
 
@@ -90,7 +90,7 @@ workflow ESVEE_CALLING {
     )
 
     // Set outputs, restoring original meta
-    ch_esvee_dir_out = Channel.empty()
+    ch_esvee_dir_out = channel.empty()
         .mix(
             WorkflowOncoanalyser.restoreMeta(channel.topic('esvee_dir'), ch_inputs),
             ch_inputs_sorted.skip.map { meta -> [meta, []] }

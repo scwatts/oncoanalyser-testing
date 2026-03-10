@@ -128,8 +128,8 @@ workflow WGTS {
     ch_redux_dna_donor_tsv_out = channel.empty()
 
     // channel: [ meta, bqr_plot ]
-    ch_redux_dna_tumor_plot_out = Channel.empty()
-    ch_redux_dna_normal_plot_out = Channel.empty()
+    ch_redux_dna_tumor_plot_out = channel.empty()
+    ch_redux_dna_normal_plot_out = channel.empty()
 
     if (run_config.stages.redux) {
 
@@ -218,8 +218,8 @@ workflow WGTS {
     // SUBWORKFLOW: Run Bam Tools to generate stats required for downstream processes
     //
     // channel: [ meta, metrics_dir ]
-    ch_bamtools_somatic_out = Channel.empty()
-    ch_bamtools_germline_out = Channel.empty()
+    ch_bamtools_somatic_out = channel.empty()
+    ch_bamtools_germline_out = channel.empty()
     if (run_config.stages.bamtools) {
 
         BAMTOOLS_METRICS(
@@ -299,7 +299,7 @@ workflow WGTS {
     // SUBWORKFLOW: Call structural variants with ESVEE
     //
     // channel: [ meta, esvee_dir ]
-    ch_esvee_out = Channel.empty()
+    ch_esvee_out = channel.empty()
     // channel: [ meta, esvee_vcf ]
     ch_esvee_germline_out = channel.empty()
     ch_esvee_somatic_out = channel.empty()
@@ -465,7 +465,7 @@ workflow WGTS {
     // SUBWORKFLOW: Calculate and summarise QC metrics
     //
     // channel: [ meta, qsee_dir ]
-    ch_qsee_out = Channel.empty()
+    ch_qsee_out = channel.empty()
     if (run_config.stages.qsee) {
 
         QSEE_METRICS(

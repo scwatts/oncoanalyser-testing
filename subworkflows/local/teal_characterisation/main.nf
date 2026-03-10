@@ -83,8 +83,8 @@ workflow TEAL_CHARACTERISATION {
 
     ch_normal_teal_bam_placeholder = WorkflowOncoanalyser.restoreMeta(
         ch_teal_prep_inputs
-            .filter { it[0].normal_id == null } // Only populate placeholder channel if normal sample is missing
-            .map { [ it[0], [], [] ] },
+            .filter { it -> it[0].normal_id == null } // Only populate placeholder channel if normal sample is missing
+            .map { it -> [ it[0], [], [] ] },
         ch_inputs
     )
 

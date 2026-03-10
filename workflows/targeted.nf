@@ -121,8 +121,8 @@ workflow TARGETED {
     ch_redux_dna_donor_tsv_out = channel.empty()
 
     // channel: [ meta, bqr_plot ]
-    ch_redux_dna_tumor_plot_out = Channel.empty()
-    ch_redux_dna_normal_plot_out = Channel.empty()
+    ch_redux_dna_tumor_plot_out = channel.empty()
+    ch_redux_dna_normal_plot_out = channel.empty()
 
     if (run_config.stages.redux) {
 

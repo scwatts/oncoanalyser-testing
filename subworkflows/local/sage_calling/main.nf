@@ -73,7 +73,7 @@ workflow SAGE_CALLING {
                 donor_ms_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_MS_TSV_DONOR),
             ]
 
-            redux_tsvs = redux_tsvs.findAll { it != [] }
+            redux_tsvs = redux_tsvs.findAll { it -> it != [] }
 
             return [ meta, tumor_bam, tumor_bai, normal_bam, normal_bai, donor_bam, donor_bai, redux_tsvs ]
         }

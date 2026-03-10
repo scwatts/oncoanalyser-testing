@@ -64,7 +64,7 @@ process REDUX {
     }
 
     def umi_args = [umi_enable_arg, umi_duplex_arg, umi_duplex_delim_arg]
-        .findAll { it != '' }
+        .findAll { it -> it != '' }
         .join(' ')
 
     if (sequencing_platform == 'ultima') {

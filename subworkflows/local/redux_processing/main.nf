@@ -137,7 +137,7 @@ workflow REDUX_PROCESSING {
 
     // Set outputs, restoring original meta, split into BAMs and TSVs
     // channel: [ meta, bam, bai, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv, bqr_plot ]
-    ch_redux_tumor_out = Channel.empty()
+    ch_redux_tumor_out = channel.empty()
         .mix(
             WorkflowOncoanalyser.restoreMeta(ch_redux_out_sorted.tumor, ch_inputs),
             ch_inputs_tumor_sorted.skip.map { meta -> [meta, [], [], [], [], [], [], []] },
@@ -148,7 +148,7 @@ workflow REDUX_PROCESSING {
             plot: [meta, bqr_plot]
         }
 
-    ch_redux_normal_out = Channel.empty()
+    ch_redux_normal_out = channel.empty()
         .mix(
             WorkflowOncoanalyser.restoreMeta(ch_redux_out_sorted.normal, ch_inputs),
             ch_inputs_normal_sorted.skip.map { meta -> [meta, [], [], [], [], [], [], []] },
@@ -159,7 +159,7 @@ workflow REDUX_PROCESSING {
             plot: [meta, bqr_plot]
         }
 
-    ch_redux_donor_out = Channel.empty()
+    ch_redux_donor_out = channel.empty()
         .mix(
             WorkflowOncoanalyser.restoreMeta(ch_redux_out_sorted.donor, ch_inputs),
             ch_inputs_donor_sorted.skip.map { meta -> [meta, [], [], [], [], [], [], []] },

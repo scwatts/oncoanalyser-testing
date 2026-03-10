@@ -38,8 +38,8 @@ process SAGE_SOMATIC {
 
     def log_level_arg = task.ext.log_level ? "-log_level ${task.ext.log_level}" : ''
 
-    def reference_ids = [meta.normal_id, meta.donor_id].findAll { it }
-    def reference_bams = [normal_bam, donor_bam].findAll { it }.collect { it.toString() }
+    def reference_ids = [meta.normal_id, meta.donor_id].findAll { it -> it }
+    def reference_bams = [normal_bam, donor_bam].findAll { it -> it }.collect { it -> it.toString() }
 
     def reference_arg = reference_ids ? "-reference ${reference_ids.join(',')}" : ''
     def reference_bam_arg = reference_bams ? "-reference_bam ${reference_bams.join(',')}" : ''

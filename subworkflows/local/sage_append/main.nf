@@ -54,7 +54,7 @@ workflow SAGE_APPEND {
                 tumor_dna_jitter_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_JITTER_TSV_TUMOR),
                 tumor_dna_ms_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_MS_TSV_TUMOR),
             ]
-            tumor_dna_redux_tsv = tumor_dna_redux_tsv.findAll { it != [] }
+            tumor_dna_redux_tsv = tumor_dna_redux_tsv.findAll { it -> it != [] }
 
             purple_dir = Utils.selectCurrentOrExisting(purple_dir, meta, Constants.INPUT.PURPLE_DIR)
 
@@ -204,7 +204,7 @@ workflow SAGE_APPEND {
 
     // Set outputs, restoring original meta
     // channel: [ meta, sage_append_dir ]
-    ch_somatic_out = channel.topic('sage_append_dir').filter { it[0].topic_key == 'somatic' }
+    ch_somatic_out = channel.topic('sage_append_dir').filter { it -> it[0].topic_key == 'somatic' }
     ch_somatic_dir = channel.empty()
         .mix(
             WorkflowOncoanalyser.restoreMeta(ch_somatic_out, ch_inputs),
@@ -212,7 +212,7 @@ workflow SAGE_APPEND {
             ch_inputs_sorted.skip.map { meta -> [meta, []] },
         )
 
-    ch_germline_out = channel.topic('sage_append_dir').filter { it[0].topic_key == 'germline' }
+    ch_germline_out = channel.topic('sage_append_dir').filter { it -> it[0].topic_key == 'germline' }
     ch_germline_dir = channel.empty()
         .mix(
             WorkflowOncoanalyser.restoreMeta(ch_germline_out, ch_inputs),
