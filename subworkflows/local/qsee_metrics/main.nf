@@ -21,10 +21,6 @@ workflow QSEE_METRICS {
     qsee_cohort_percentiles  // channel: [mandatory] /path/to/cohort_percentiles
 
     main:
-    // Channel for version.yml files
-    // channel: [ versions.yml ]
-    ch_versions = Channel.empty()
-
     // Select and route inputs
     // channel: { meta, redux_tsvs_tumor, redux_tsvs_normal, bamtools_tumor_dir, bamtools_normal_dir, cobalt_dir, esvee_dir, purple_dir }
     ch_inputs_sorted = WorkflowOncoanalyser.groupByMeta(
@@ -96,8 +92,6 @@ workflow QSEE_METRICS {
         qsee_cohort_percentiles,
     )
 
-    ch_versions = ch_versions.mix(QSEE.out.versions)
-
     // Set outputs, restoring original meta
     // channel: [ meta, qsee_dir ]
     ch_outputs = Channel.empty()
@@ -108,6 +102,4 @@ workflow QSEE_METRICS {
 
     emit:
     qsee_dir = ch_outputs  // channel: [ meta, qsee_dir ]
-
-    versions  = ch_versions // channel: [ versions.yml ]
 }

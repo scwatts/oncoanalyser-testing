@@ -20,9 +20,9 @@ process QSEE {
     path cohort_percentiles
 
     output:
-    tuple val(meta), path('qsee/'), emit: qsee_dir
-    path 'versions.yml'           , emit: versions
-    path '.command.*'             , emit: command_files
+    tuple val(meta), path('qsee/')                  , topic: qsee_dir
+    tuple val(meta), val('qsee'), path('.command.*'), topic: command_files
+    path 'versions.yml'                             , topic: versions
 
     when:
     task.ext.when == null || task.ext.when

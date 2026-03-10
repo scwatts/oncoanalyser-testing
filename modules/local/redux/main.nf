@@ -21,19 +21,19 @@ process REDUX {
     val targeted_mode
 
     output:
-    tuple val(meta), path("redux_${meta.sample_id}/")                                          , emit: redux_dir
+    tuple val(meta), path("redux_${meta.sample_id}/")                                          , topic: redux_dir
 
     tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.bam"),
-                     path("redux_${meta.sample_id}/${meta.sample_id}.redux.bam.bai")           , emit: bam
+                     path("redux_${meta.sample_id}/${meta.sample_id}.redux.bam.bai")           , topic: redux_bam
 
-    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.bqr.tsv")           , emit: bqr_tsv
-    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.bqr.png")           , emit: bqr_plot
-    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.duplicate_freq.tsv"), emit: dup_freq_tsv, optional: true
-    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.jitter_params.tsv") , emit: jitter_tsv
-    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.ms_table.tsv.gz")   , emit: ms_tsv
+    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.bqr.tsv")           , topic: redux_bqr_tsv
+    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.bqr.png")           , topic: redux_bqr_plot
+    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.duplicate_freq.tsv"), topic: redux_dup_freq_tsv, optional: true
+    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.jitter_params.tsv") , topic: redux_jitter_tsv
+    tuple val(meta), path("redux_${meta.sample_id}/${meta.sample_id}.redux.ms_table.tsv.gz")   , topic: redux_ms_tsv
 
-    tuple val(meta), val('redux'), path('.command.*')            , topic: command_files
-    path 'versions.yml'                                          , topic: versions
+    tuple val(meta), val('redux'), path('.command.*')                                          , topic: command_files
+    path 'versions.yml'                                                                        , topic: versions
 
     when:
     task.ext.when == null || task.ext.when

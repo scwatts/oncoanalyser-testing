@@ -29,10 +29,6 @@ workflow SAGE_PLOTTING {
     ensembl_data_resources       // channel: [mandatory] /path/to/ensembl_data_resources/
 
     main:
-    // Channel for version.yml files
-    // channel: [ versions.yml ]
-    ch_versions = Channel.empty()
-
     // Sort inputs
     // channel: runnable: [ meta, tumor_bam, tumor_bai, normal_bam, normal_bai, donor_bam, donor_bai, [redux_tsv, ...], purple_dir ]
     // channel: skip: [ meta ]
@@ -118,8 +114,6 @@ workflow SAGE_PLOTTING {
         ensembl_data_resources,
     )
 
-    ch_versions = ch_versions.mix(SAGE_VISUALISER.out.versions)
-
     // Set outputs, restoring original meta
     // channel: [ meta, sage_dir ]
     ch_visualiser_dir_out = Channel.empty()
@@ -130,5 +124,4 @@ workflow SAGE_PLOTTING {
 
     emit:
     visualiser_dir  = ch_visualiser_dir_out // channel: [ meta, sage_dir ]
-    versions        = ch_versions           // channel: [ versions.yml ]
 }

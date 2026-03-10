@@ -164,6 +164,4 @@ workflow REDUX_PROCESSING {
     dna_tumor_plot  = ch_redux_tumor_out.plot  // channel: [ meta, bqr_plot ]
     dna_normal_plot = ch_redux_normal_out.plot // channel: [ meta, bqr_plot ]
     dna_donor_plot  = ch_redux_donor_out.plot  // channel: [ meta, bqr_plot ]
-
-    versions       = ch_versions             // channel: [ versions.yml ]
 }
