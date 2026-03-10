@@ -108,7 +108,7 @@ workflow PURITY_ESTIMATE {
             params.sequencing_platform,
             params.redux_umi_enabled,
             params.redux_umi_duplex_delim,
-            targeted_mode,
+            false,  // targeted_mode
         )
 
         ch_redux_dna_tumor_bam_out = ch_redux_dna_tumor_bam_out.mix(REDUX_PROCESSING.out.dna_tumor_bam)

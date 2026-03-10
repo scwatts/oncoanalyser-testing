@@ -211,7 +211,7 @@ workflow PREPARE_REFERENCE {
         }
 
         // Set PON paths
-        if (params.sequencing_platform === 'ultima') {
+        if (params.sequencing_platform == 'ultima') {
 
             ch_hmf_data = ch_hmf_data
                 .map { d ->
@@ -227,7 +227,7 @@ workflow PREPARE_REFERENCE {
                     return d
                 }
 
-        } else if (params.sequencing_platform === 'sbx') {
+        } else if (params.sequencing_platform == 'sbx') {
 
             ch_hmf_data = ch_hmf_data
                 .map { d ->

@@ -31,56 +31,58 @@ workflow REDUX_PROCESSING {
     // Select and sort input sources, separating bytumor and normal
     // channel: runnable: [ meta, [bam, ...], [bai, ...] ]
     // channel: skip: [ meta ]
-
-    def selectBamInputs = { ch_dna, bam_type, bai_type, bam_redux_type ->
-        return ch_dna.map { meta, bams, bais ->
-
-            bams = Utils.hasExistingInput(meta, bam_type)
-                ? [Utils.getInput(meta, bam_type)]
-                : bams
-
-            bais = Utils.hasExistingInput(meta, bai_type)
-                ? [Utils.getInput(meta, bai_type)]
-                : bais
-
-            return [meta, bams, bais]
+    ch_inputs_tumor_sorted = ch_dna_tumor
+        .map { meta, bams, bais ->
+            return [
+                meta,
+                Utils.hasExistingInput(meta, Constants.INPUT.BAM_DNA_TUMOR) ? [Utils.getInput(meta, Constants.INPUT.BAM_DNA_TUMOR)] : bams,
+                Utils.hasExistingInput(meta, Constants.INPUT.BAI_DNA_TUMOR) ? [Utils.getInput(meta, Constants.INPUT.BAI_DNA_TUMOR)] : bais,
+            ]
         }
         .branch { meta, bams, bais ->
-            def has_existing = Utils.hasExistingInput(meta, bam_redux_type)
+            def has_existing = Utils.hasExistingInput(meta, Constants.INPUT.BAM_REDUX_DNA_TUMOR)
             runnable: bams && !has_existing
             skip: true
                 return meta
         }
-    }
 
-    ch_inputs_tumor = selectBamInputs(
-        ch_dna_tumor,
-        Constants.INPUT.BAM_DNA_TUMOR,
-        Constants.INPUT.BAI_DNA_TUMOR,
-        Constants.INPUT.BAM_REDUX_DNA_TUMOR
-    )
+    ch_inputs_normal_sorted = ch_dna_normal
+        .map { meta, bams, bais ->
+            return [
+                meta,
+                Utils.hasExistingInput(meta, Constants.INPUT.BAM_DNA_NORMAL) ? [Utils.getInput(meta, Constants.INPUT.BAM_DNA_NORMAL)] : bams,
+                Utils.hasExistingInput(meta, Constants.INPUT.BAI_DNA_NORMAL) ? [Utils.getInput(meta, Constants.INPUT.BAI_DNA_NORMAL)] : bais,
+            ]
+        }
+        .branch { meta, bams, bais ->
+            def has_existing = Utils.hasExistingInput(meta, Constants.INPUT.BAM_REDUX_DNA_NORMAL)
+            runnable: bams && !has_existing
+            skip: true
+                return meta
+        }
 
-    ch_inputs_normal = selectBamInputs(
-        ch_dna_normal,
-        Constants.INPUT.BAM_DNA_NORMAL,
-        Constants.INPUT.BAI_DNA_NORMAL,
-        Constants.INPUT.BAM_REDUX_DNA_NORMAL
-    )
-
-    ch_inputs_donor = selectBamInputs(
-        ch_dna_donor,
-        Constants.INPUT.BAM_DNA_DONOR,
-        Constants.INPUT.BAI_DNA_DONOR,
-        Constants.INPUT.BAM_REDUX_DNA_DONOR
-    )
+    ch_inputs_donor_sorted = ch_dna_donor
+        .map { meta, bams, bais ->
+            return [
+                meta,
+                Utils.hasExistingInput(meta, Constants.INPUT.BAM_DNA_DONOR) ? [Utils.getInput(meta, Constants.INPUT.BAM_DNA_DONOR)] : bams,
+                Utils.hasExistingInput(meta, Constants.INPUT.BAI_DNA_DONOR) ? [Utils.getInput(meta, Constants.INPUT.BAI_DNA_DONOR)] : bais,
+            ]
+        }
+        .branch { meta, bams, bais ->
+            def has_existing = Utils.hasExistingInput(meta, Constants.INPUT.BAM_REDUX_DNA_DONOR)
+            runnable: bams && !has_existing
+            skip: true
+            return meta
+        }
 
     // Create process input channel
     // channel: [ meta_redux, [bam, ...], [bai, ...] ]
     ch_redux_inputs = channel.empty()
         .mix(
-            ch_inputs_tumor.runnable.map { meta, bams, bais -> [meta, Utils.getTumorDnaSample(meta), 'tumor', bams, bais] },
-            ch_inputs_normal.runnable.map { meta, bams, bais -> [meta, Utils.getNormalDnaSample(meta), 'normal', bams, bais] },
-            ch_inputs_donor.runnable.map { meta, bams, bais -> [meta, Utils.getDonorDnaSample(meta), 'donor', bams, bais] },
+            ch_inputs_tumor_sorted.runnable.map { meta, bams, bais -> [meta, Utils.getTumorDnaSample(meta), 'tumor', bams, bais] },
+            ch_inputs_normal_sorted.runnable.map { meta, bams, bais -> [meta, Utils.getNormalDnaSample(meta), 'normal', bams, bais] },
+            ch_inputs_donor_sorted.runnable.map { meta, bams, bais -> [meta, Utils.getDonorDnaSample(meta), 'donor', bams, bais] },
         )
         .map { meta, meta_sample, sample_type, bams, bais ->
 
@@ -133,24 +135,40 @@ workflow REDUX_PROCESSING {
             placeholder: true
         }
 
-    // Set outputs, restoring original meta, split by file type
+    // Set outputs, restoring original meta, split into BAMs and TSVs
     // channel: [ meta, bam, bai, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv, bqr_plot ]
-    def createOutputChannels = { ch_redux_out_sample_type, ch_sample_type_skip ->
-        return Channel.empty()
-            .mix(
-                WorkflowOncoanalyser.restoreMeta(ch_redux_out_sample_type, ch_inputs),
-                ch_sample_type_skip.map { meta -> [meta, [], [], [], [], [], [], []] },
-            )
-            .multiMap { meta, bam, bai, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv, bqr_plot ->
-                bam: [meta, bam, bai]
-                tsv: [meta, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv]
-                plot: [meta, bqr_plot]
-            }
-    }
+    ch_redux_tumor_out = Channel.empty()
+        .mix(
+            WorkflowOncoanalyser.restoreMeta(ch_redux_out_sorted.tumor, ch_inputs),
+            ch_inputs_tumor_sorted.skip.map { meta -> [meta, [], [], [], [], [], [], []] },
+        )
+        .multiMap { meta, bam, bai, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv, bqr_plot ->
+            bam: [meta, bam, bai]
+            tsv: [meta, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv]
+            plot: [meta, bqr_plot]
+        }
 
-    ch_redux_tumor_out = createOutputChannels(ch_redux_out_sorted.tumor, ch_inputs_tumor.skip)
-    ch_redux_normal_out = createOutputChannels(ch_redux_out_sorted.normal, ch_inputs_normal.skip)
-    ch_redux_donor_out = createOutputChannels(ch_redux_out_sorted.donor, ch_inputs_donor.skip)
+    ch_redux_normal_out = Channel.empty()
+        .mix(
+            WorkflowOncoanalyser.restoreMeta(ch_redux_out_sorted.normal, ch_inputs),
+            ch_inputs_normal_sorted.skip.map { meta -> [meta, [], [], [], [], [], [], []] },
+        )
+        .multiMap { meta, bam, bai, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv, bqr_plot ->
+            bam: [meta, bam, bai]
+            tsv: [meta, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv]
+            plot: [meta, bqr_plot]
+        }
+
+    ch_redux_donor_out = Channel.empty()
+        .mix(
+            WorkflowOncoanalyser.restoreMeta(ch_redux_out_sorted.donor, ch_inputs),
+            ch_inputs_donor_sorted.skip.map { meta -> [meta, [], [], [], [], [], [], []] },
+        )
+        .multiMap { meta, bam, bai, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv, bqr_plot ->
+            bam: [meta, bam, bai]
+            tsv: [meta, bqr_tsv, dup_freq_tsv, jitter_tsv, ms_tsv]
+            plot: [meta, bqr_plot]
+        }
 
     emit:
     dna_tumor_bam  = ch_redux_tumor_out.bam  // channel: [ meta, bam, bai ]

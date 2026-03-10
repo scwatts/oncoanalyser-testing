@@ -2,8 +2,6 @@
 // SAGE is a precise and highly sensitive somatic SNV, MNV and small INDEL caller
 //
 
-import java.nio.channels.Channel
-
 include { SAGE_VISUALISER } from '../../../modules/local/sage/visualiser/main'
 
 workflow SAGE_PLOTTING {
@@ -116,7 +114,7 @@ workflow SAGE_PLOTTING {
 
     // Set outputs, restoring original meta
     // channel: [ meta, sage_dir ]
-    ch_visualiser_dir_out = Channel.empty()
+    ch_visualiser_dir_out = channel.empty()
         .mix(
             WorkflowOncoanalyser.restoreMeta(channel.topic('sage_vis_dir'), ch_inputs),
             ch_inputs_sorted.skip.map { meta -> [meta, []] },

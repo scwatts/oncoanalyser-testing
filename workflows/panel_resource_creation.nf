@@ -131,6 +131,8 @@ workflow PANEL_RESOURCE_CREATION {
         ref_data.genome_fai,
         hmf_data.ensembl_data_resources,
         hmf_data.known_fusion_data,
+        hmf_data.isofox_gene_distribution,
+        hmf_data.isofox_alt_sj_distribution,
         isofox_counts,
         isofox_gc_ratios,
         [],  // isofox_gene_ids
