@@ -143,8 +143,6 @@ workflow TARGETED {
             true,  // targeted_mode
         )
 
-        ch_versions = ch_versions.mix(REDUX_PROCESSING.out.versions)
-
         ch_redux_dna_tumor_bam_out = ch_redux_dna_tumor_bam_out.mix(REDUX_PROCESSING.out.dna_tumor_bam)
         ch_redux_dna_normal_bam_out = ch_redux_dna_normal_bam_out.mix(REDUX_PROCESSING.out.dna_normal_bam)
         ch_redux_dna_donor_bam_out = ch_redux_dna_donor_bam_out.mix(REDUX_PROCESSING.out.dna_donor_bam)
@@ -484,8 +482,6 @@ workflow TARGETED {
             hmf_data.sage_highconf_regions,
             hmf_data.ensembl_data_resources,
         )
-
-        ch_versions = ch_versions.mix(SAGE_PLOTTING.out.versions)
 
     }
 

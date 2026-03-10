@@ -118,7 +118,7 @@ workflow SAGE_PLOTTING {
     // channel: [ meta, sage_dir ]
     ch_visualiser_dir_out = Channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(SAGE_VISUALISER.out.sage_vis_dir, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(channel.topic('sage_vis_dir'), ch_inputs),
             ch_inputs_sorted.skip.map { meta -> [meta, []] },
         )
 

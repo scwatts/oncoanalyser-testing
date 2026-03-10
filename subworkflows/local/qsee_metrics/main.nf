@@ -96,7 +96,7 @@ workflow QSEE_METRICS {
     // channel: [ meta, qsee_dir ]
     ch_outputs = Channel.empty()
         .mix(
-            WorkflowOncoanalyser.restoreMeta(QSEE.out.qsee_dir, ch_inputs),
+            WorkflowOncoanalyser.restoreMeta(channel.topic('qsee_dir'), ch_inputs),
             ch_inputs_sorted.skip.map { meta -> [meta, []] },
         )
 

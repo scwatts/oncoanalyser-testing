@@ -150,8 +150,6 @@ workflow WGTS {
             false,  // targeted_mode
         )
 
-        ch_versions = ch_versions.mix(REDUX_PROCESSING.out.versions)
-
         ch_redux_dna_tumor_bam_out = ch_redux_dna_tumor_bam_out.mix(REDUX_PROCESSING.out.dna_tumor_bam)
         ch_redux_dna_normal_bam_out = ch_redux_dna_normal_bam_out.mix(REDUX_PROCESSING.out.dna_normal_bam)
         ch_redux_dna_donor_bam_out = ch_redux_dna_donor_bam_out.mix(REDUX_PROCESSING.out.dna_donor_bam)
@@ -234,8 +232,6 @@ workflow WGTS {
             hmf_data.ensembl_data_resources,
             [], // target_region_bed
         )
-
-        ch_versions = ch_versions.mix(BAMTOOLS_METRICS.out.versions)
 
         ch_bamtools_somatic_out = ch_bamtools_somatic_out.mix(BAMTOOLS_METRICS.out.somatic)
         ch_bamtools_germline_out = ch_bamtools_germline_out.mix(BAMTOOLS_METRICS.out.germline)
@@ -327,8 +323,6 @@ workflow WGTS {
             [],  // target_region_bed
             params.sequencing_platform,
         )
-
-        ch_versions = ch_versions.mix(ESVEE_CALLING.out.versions)
 
         ch_esvee_out = ch_esvee_out.mix(ESVEE_CALLING.out.esvee_dir)
         ch_esvee_germline_out = ch_esvee_germline_out.mix(ESVEE_CALLING.out.germline_vcf)
@@ -487,8 +481,6 @@ workflow WGTS {
             hmf_data.qsee_cohort_percentiles,
         )
 
-        ch_versions = ch_versions.mix(QSEE_METRICS.out.versions)
-
         ch_qsee_out = ch_qsee_out.mix(QSEE_METRICS.out.qsee_dir)
 
     } else {
@@ -555,8 +547,6 @@ workflow WGTS {
             hmf_data.ensembl_data_resources,
         )
 
-        ch_versions = ch_versions.mix(SAGE_PLOTTING.out.versions)
-
     }
 
     //
@@ -608,35 +598,6 @@ workflow WGTS {
     } else {
 
         ch_linx_somatic_visualiser_dir_out = ch_inputs.map { meta -> [meta, []] }
-
-    }
-
-    //
-    // SUBWORKFLOW: Run Bam Tools to generate stats required for downstream processes
-    //
-    // channel: [ meta, metrics_dir ]
-    ch_bamtools_somatic_out = channel.empty()
-    ch_bamtools_germline_out = channel.empty()
-    if (run_config.stages.bamtools) {
-
-        BAMTOOLS_METRICS(
-            ch_inputs,
-            ch_redux_dna_tumor_out,
-            ch_redux_dna_normal_out,
-            ref_data.genome_fasta,
-            ref_data.genome_version,
-            hmf_data.driver_gene_panel,
-            hmf_data.ensembl_data_resources,
-            [], // target_region_bed
-        )
-
-        ch_bamtools_somatic_out = ch_bamtools_somatic_out.mix(BAMTOOLS_METRICS.out.somatic)
-        ch_bamtools_germline_out = ch_bamtools_germline_out.mix(BAMTOOLS_METRICS.out.germline)
-
-    } else {
-
-        ch_bamtools_somatic_out = ch_inputs.map { meta -> [meta, []] }
-        ch_bamtools_germline_out = ch_inputs.map { meta -> [meta, []] }
 
     }
 

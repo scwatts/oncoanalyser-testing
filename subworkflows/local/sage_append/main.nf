@@ -9,22 +9,23 @@ include { SAGE_APPEND as SAGE_APPEND_GERMLINE } from '../../../modules/local/sag
 workflow SAGE_APPEND {
     take:
     // Sample data
-    ch_inputs           // channel: [mandatory] [ meta ]
-    ch_purple_dir       // channel: [mandatory] [ meta, purple_dir ]
-    ch_tumor_dna_bam    // channel: [mandatory] [ meta, bam, bai ]
-    ch_tumor_dna_tsv    // channel: [mandatory] [ meta, bqr_tsv, jitter_tsv, ms_tsv ]
-    ch_tumor_rna_bam    // channel: [mandatory] [ meta, bam, bai ]
+    ch_inputs            // channel: [mandatory] [ meta ]
+    ch_purple_dir        // channel: [mandatory] [ meta, purple_dir ]
+    ch_tumor_dna_bam     // channel: [mandatory] [ meta, bam, bai ]
+    ch_tumor_dna_tsv     // channel: [mandatory] [ meta, bqr_tsv, jitter_tsv, ms_tsv ]
+    ch_tumor_rna_bam     // channel: [mandatory] [ meta, bam, bai ]
 
     // Reference data
-    genome_fasta        // channel: [mandatory] /path/to/genome_fasta
-    genome_version      // channel: [mandatory] genome version
-    genome_fai          // channel: [mandatory] /path/to/genome_fai
-    genome_dict         // channel: [mandatory] /path/to/genome_dict
+    genome_fasta         // channel: [mandatory] /path/to/genome_fasta
+    genome_version       // channel: [mandatory] genome version
+    genome_fai           // channel: [mandatory] /path/to/genome_fai
+    genome_dict          // channel: [mandatory] /path/to/genome_dict
 
     // Params
-    sequencing_platform // string:  [mandatory] sequencing platform
-    enable_germline     // boolean: [mandatory] Enable germline
-    targeted_mode       // boolean: [mandatory] Set targeted mode
+    sequencing_platform  // string:  [mandatory] sequencing platform
+    enable_germline      // boolean: [mandatory] Enable germline
+    targeted_mode        // boolean: [mandatory] Set targeted mode
+    purity_estimate_mode // boolean: [mandatory] Set purity estimate mode
 
     main:
     // Select input sources and sort

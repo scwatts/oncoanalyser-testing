@@ -39,9 +39,6 @@ workflow ORANGE_REPORTING {
     // Params
     targeted_mode               // boolean: [mandatory] Set targeted mode
 
-    // Params
-    experiment_type             //  string: [mandatory] Experiment type for report (WGS, PANEL)
-
     main:
     // Refer to inputs by index to avoid needing to declare each variable when calling map, branch, etc
     input_indexes = [
@@ -158,17 +155,6 @@ workflow ORANGE_REPORTING {
                 return meta
         }
 
-    // First set RNA reference files
-    // NOTE(SW): since the RNA reference files are provided as channels, I seem to be only able to include via channel ops
-    // channel: [ meta, tbt_metrics_dir, nbt_metrics_dir, tsage_dir, nsage_dir, tsage_append, nsage_append, purple_dir, tlinx_anno_dir, tlinx_plot_dir, nlinx_anno_dir, virusinterpreter_dir, chord_dir, sigs_dir, lilac_dir, cuppa_dir, peach_dir, isofox_dir, isofox_alt_sj, isofox_gene_distribution ]
-    ch_inputs_runnable = channel.empty()
-        .mix(
-            ch_inputs_sorted.runnable_dna.map { d -> d + [[], []] },
-            ch_inputs_sorted.runnable_dna_and_rna
-                .combine(isofox_alt_sj)
-                .combine(isofox_gene_distribution),
-        )
-
     // Create process input channel
     // channel: sample_data: [ meta, tbt_metrics_dir, nbt_metrics_dir, tsage_dir, nsage_dir, tsmlv_vcf, nsmlv_vcf, purple_dir, tlinx_anno_dir, tlinx_plot_dir, nlinx_anno_dir, virusinterpreter_dir, chord_dir, sigs_dir, lilac_dir, cuppa_dir, peach_dir, isofox_dir ]
     ch_orange_inputs = ch_inputs_sorted.runnable
@@ -242,7 +228,7 @@ workflow ORANGE_REPORTING {
 
             assert inputs_selected.size() == input_indexes.size()
 
-            return meta_orange + [inputs_selected]
+            return [meta_orange] + inputs_selected
         }
 
     // Run process
