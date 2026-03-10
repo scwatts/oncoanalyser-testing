@@ -203,7 +203,7 @@ def get_command_log_filepath(data) {
     } else if (panel_logs.contains(name)) {
         return fps.collect { d -> ["logs/panel_resources/${name}${d.name}", d] }
     } else {
-        return fps.collect { d -> ["logs/${meta.key}/${name}${d.name}", d] }
+        return fps.collect { d -> ["logs/${meta.key}/${name}.${meta.id}${d.name}", d] }
     }
 
 }
