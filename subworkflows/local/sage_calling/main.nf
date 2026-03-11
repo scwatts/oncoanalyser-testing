@@ -26,7 +26,6 @@ workflow SAGE_CALLING {
     sage_known_hotspots_somatic  // channel: [mandatory] /path/to/sage_known_hotspots_somatic
     sage_known_hotspots_germline // channel: [optional]  /path/to/sage_known_hotspots_germline
     sage_highconf_regions        // channel: [mandatory] /path/to/sage_highconf_regions
-    segment_mappability          // channel: [mandatory] /path/to/segment_mappability
     driver_gene_panel            // channel: [mandatory] /path/to/driver_gene_panel
     ensembl_data_resources       // channel: [mandatory] /path/to/ensembl_data_resources/
     gnomad_resource              // channel: [mandatory] /path/to/gnomad_resource

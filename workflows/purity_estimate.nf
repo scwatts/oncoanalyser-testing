@@ -53,7 +53,6 @@ workflow PURITY_ESTIMATE {
     ch_align_dna_tumor_out = channel.empty()
     ch_align_dna_normal_out = channel.empty()
     ch_align_dna_donor_out = channel.empty()
-    ch_align_rna_tumor_out = channel.empty()
     if (run_config.stages.alignment) {
 
         READ_ALIGNMENT_DNA(
@@ -121,9 +120,9 @@ workflow PURITY_ESTIMATE {
 
     } else {
 
-        ch_redux_dna_tumor_out = ch_inputs.map { meta -> [meta, [], []] }
-        ch_redux_dna_normal_out = ch_inputs.map { meta -> [meta, [], []] }
-        ch_redux_dna_donor_out = ch_inputs.map { meta -> [meta, [], []] }
+        ch_redux_dna_tumor_bam_out = ch_inputs.map { meta -> [meta, [], []] }
+        ch_redux_dna_normal_bam_out = ch_inputs.map { meta -> [meta, [], []] }
+        ch_redux_dna_donor_bam_out = ch_inputs.map { meta -> [meta, [], []] }
 
         ch_redux_dna_tumor_tsv_out = ch_inputs.map { meta -> [meta, [], [], []] }
         ch_redux_dna_normal_tsv_out = ch_inputs.map { meta -> [meta, [], [], []] }
