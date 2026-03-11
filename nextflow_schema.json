@@ -100,8 +100,9 @@
                     "fa_icon": "fas fa-diagram-project"
                 },
                 "create_stub_placeholders": {
-                    "type": "string",
+                    "type": "boolean",
                     "description": "Create placeholders for reference data during stub run.",
+                    "default": false,
                     "fa_icon": "fas fa-diagram-project"
                 },
                 "max_fastq_records": {
@@ -393,6 +394,7 @@
                 "monochrome_logs": {
                     "type": "boolean",
                     "description": "Do not use coloured log outputs.",
+                    "default": false,
                     "fa_icon": "fas fa-palette",
                     "hidden": true
                 },
