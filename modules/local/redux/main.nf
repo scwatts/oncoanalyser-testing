@@ -46,26 +46,24 @@ process REDUX {
     def log_level_arg = task.ext.log_level ? "-log_level ${task.ext.log_level}" : ''
 
     def form_consensus_arg = ''
-    def umi_enable_arg = ''
-    def umi_duplex_arg = ''
-    def umi_duplex_delim_arg = ''
     def skip_duplicate_marking_arg = ''
     def bqr_use_all_regions_arg = ''
 
+    def umi_args_list = []
+
     if(umi_enable) {
-        umi_enable_arg = '-umi_enabled'
+        umi_args_list.add('-umi_enabled')
     } else {
+        assert sequencing_platform == 'ultima'
         form_consensus_arg = '-form_consensus'
     }
 
     if(umi_duplex_delim) {
-        umi_duplex_arg = '-umi_duplex'
-        umi_duplex_delim_arg = "-umi_duplex_delim ${umi_duplex_delim}"
+        umi_args_list.add('-umi_duplex')
+        umi_args_list.add("-umi_duplex_delim ${umi_duplex_delim}")
     }
 
-    def umi_args = [umi_enable_arg, umi_duplex_arg, umi_duplex_delim_arg]
-        .findAll { it -> it != '' }
-        .join(' ')
+    def umi_args = umi_args_list ? umi_args_list.join(' ') : ''
 
     if (sequencing_platform == 'ultima') {
         form_consensus_arg = ''
