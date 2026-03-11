@@ -478,6 +478,7 @@ workflow WGTS {
             ch_purple_out,
             hmf_data.driver_gene_panel,
             hmf_data.qsee_cohort_percentiles,
+            false,  // targeted_mode
         )
 
         ch_qsee_out = ch_qsee_out.mix(QSEE_METRICS.out.qsee_dir)

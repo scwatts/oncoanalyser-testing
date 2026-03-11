@@ -20,6 +20,9 @@ workflow QSEE_METRICS {
     driver_gene_panel        // channel: [mandatory] /path/to/driver_gene_panel
     qsee_cohort_percentiles  // channel: [mandatory] /path/to/cohort_percentiles
 
+    // Params
+    targeted_mode            // boolean: [mandatory] Set targeted mode
+
     main:
     // Select and route inputs
     // channel: { meta, redux_tsvs_tumor, redux_tsvs_normal, bamtools_tumor_dir, bamtools_normal_dir, cobalt_dir, esvee_dir, purple_dir }
@@ -93,6 +96,7 @@ workflow QSEE_METRICS {
         ch_qsee_inputs,
         driver_gene_panel,
         qsee_cohort_percentiles,
+        targeted_mode,
     )
 
     // Set outputs, restoring original meta
