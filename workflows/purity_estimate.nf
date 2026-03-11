@@ -7,8 +7,8 @@
 
 include { AMBER_PROFILING                 } from '../subworkflows/local/amber_profiling'
 include { COBALT_PROFILING                } from '../subworkflows/local/cobalt_profiling'
-include { PREPARE_REFERENCE               } from '../subworkflows/local/prepare_reference'
 include { PREPARE_OUTPUTS_PURITY_ESTIMATE } from '../subworkflows/local/prepare_outputs'
+include { PREPARE_REFERENCE               } from '../subworkflows/local/prepare_reference'
 include { READ_ALIGNMENT_DNA              } from '../subworkflows/local/read_alignment_dna'
 include { REDUX_PROCESSING                } from '../subworkflows/local/redux_processing'
 include { SAGE_APPEND                     } from '../subworkflows/local/sage_append'
