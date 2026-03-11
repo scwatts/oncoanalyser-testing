@@ -197,7 +197,6 @@ workflow PANEL_RESOURCE_CREATION {
         hmf_data.sage_known_hotspots_somatic,
         hmf_data.sage_known_hotspots_germline,
         hmf_data.sage_highconf_regions,
-        hmf_data.segment_mappability,
         driver_gene_panel,
         hmf_data.ensembl_data_resources,
         hmf_data.gnomad_resource,
