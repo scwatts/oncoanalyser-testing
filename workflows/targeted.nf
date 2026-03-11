@@ -17,8 +17,8 @@ include { LINX_PLOTTING            } from '../subworkflows/local/linx_plotting'
 include { ORANGE_REPORTING         } from '../subworkflows/local/orange_reporting'
 include { PAVE_ANNOTATION          } from '../subworkflows/local/pave_annotation'
 include { PEACH_CALLING            } from '../subworkflows/local/peach_calling'
-include { PREPARE_REFERENCE        } from '../subworkflows/local/prepare_reference'
 include { PREPARE_OUTPUTS_TARGETED } from '../subworkflows/local/prepare_outputs'
+include { PREPARE_REFERENCE        } from '../subworkflows/local/prepare_reference'
 include { PURPLE_CALLING           } from '../subworkflows/local/purple_calling'
 include { QSEE_METRICS             } from '../subworkflows/local/qsee_metrics'
 include { READ_ALIGNMENT_DNA       } from '../subworkflows/local/read_alignment_dna'
@@ -209,6 +209,35 @@ workflow TARGETED {
     } else {
 
         ch_isofox_out = ch_inputs.map { meta -> [meta, []] }
+
+    }
+
+    //
+    // SUBWORKFLOW: Run Bam Tools to generate stats required for downstream processes
+    //
+    // channel: [ meta, metrics ]
+    ch_bamtools_somatic_out = channel.empty()
+    ch_bamtools_germline_out = channel.empty()
+    if (run_config.stages.bamtools) {
+
+        BAMTOOLS_METRICS(
+            ch_inputs,
+            ch_redux_dna_tumor_bam_out,
+            ch_redux_dna_normal_bam_out,
+            ref_data.genome_fasta,
+            ref_data.genome_version,
+            panel_data.driver_gene_panel,
+            hmf_data.ensembl_data_resources,
+            panel_data.target_region_bed,
+        )
+
+        ch_bamtools_somatic_out = ch_bamtools_somatic_out.mix(BAMTOOLS_METRICS.out.somatic)
+        ch_bamtools_germline_out = ch_bamtools_germline_out.mix(BAMTOOLS_METRICS.out.germline)
+
+    } else {
+
+        ch_bamtools_somatic_out = ch_inputs.map { meta -> [meta, []] }
+        ch_bamtools_germline_out = ch_inputs.map { meta -> [meta, []] }
 
     }
 
@@ -563,35 +592,6 @@ workflow TARGETED {
     } else {
 
         ch_linx_somatic_visualiser_dir_out = ch_inputs.map { meta -> [meta, []] }
-
-    }
-
-    //
-    // SUBWORKFLOW: Run Bam Tools to generate stats required for downstream processes
-    //
-    // channel: [ meta, metrics ]
-    ch_bamtools_somatic_out = channel.empty()
-    ch_bamtools_germline_out = channel.empty()
-    if (run_config.stages.bamtools) {
-
-        BAMTOOLS_METRICS(
-            ch_inputs,
-            ch_redux_dna_tumor_bam_out,
-            ch_redux_dna_normal_bam_out,
-            ref_data.genome_fasta,
-            ref_data.genome_version,
-            panel_data.driver_gene_panel,
-            hmf_data.ensembl_data_resources,
-            panel_data.target_region_bed,
-        )
-
-        ch_bamtools_somatic_out = ch_bamtools_somatic_out.mix(BAMTOOLS_METRICS.out.somatic)
-        ch_bamtools_germline_out = ch_bamtools_germline_out.mix(BAMTOOLS_METRICS.out.germline)
-
-    } else {
-
-        ch_bamtools_somatic_out = ch_inputs.map { meta -> [meta, []] }
-        ch_bamtools_germline_out = ch_inputs.map { meta -> [meta, []] }
 
     }
 
