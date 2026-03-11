@@ -79,8 +79,11 @@ workflow QSEE_METRICS {
                 key: meta.group_id,
                 id: meta.group_id,
                 tumor_id: Utils.getTumorDnaSampleName(meta),
-                normal_id: Utils.getNormalDnaSampleName(meta),
             ]
+
+            if (inputs.redux_tsvs_normal || inputs.bamtools_normal_dir) {
+                meta_qsee.normal_id = Utils.getNormalDnaSampleName(meta)
+            }
 
             return [meta_qsee, tumor_redux_tsvs, normal_redux_tsvs, bamtools_tumor_dir, bamtools_normal_dir, cobalt_dir, esvee_dir, purple_dir]
         }
