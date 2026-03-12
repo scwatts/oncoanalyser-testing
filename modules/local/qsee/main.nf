@@ -42,7 +42,7 @@ process QSEE {
     def cobalt_dir_arg = cobalt_dir ? "-cobalt_dir ${cobalt_dir}" : ''
     def esvee_dir_arg = esvee_dir ? "-esvee_dir ${esvee_dir}" : ''
 
-    def cohort_percentiles_arg = !targeted_mode ? "-cohort_percentiles_file ${cohort_percentiles}" : ''
+    def cohort_percentiles_arg = targeted_mode ? '' : "-cohort_percentiles_file ${cohort_percentiles}"
 
     """
     mkdir -p qsee/
