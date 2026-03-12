@@ -42,15 +42,15 @@ workflow QSEE_METRICS {
             purple_dir ->
 
             def tumor_redux_tsvs = [
-                tumor_bqr_tsv ?: Utils.getInput(tumor_bqr_tsv, meta, Constants.INPUT.REDUX_BQR_TSV_TUMOR),
-                tumor_jitter_tsv ?: Utils.getInput(tumor_jitter_tsv, meta, Constants.INPUT.REDUX_JITTER_TSV_TUMOR),
-                tumor_ms_tsv ?: Utils.getInput(tumor_ms_tsv, meta, Constants.INPUT.REDUX_MS_TSV_TUMOR),
+                tumor_bqr_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_BQR_TSV_TUMOR),
+                tumor_jitter_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_JITTER_TSV_TUMOR),
+                tumor_ms_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_MS_TSV_TUMOR),
             ]
 
             def normal_redux_tsvs = [
-                normal_bqr_tsv ?: Utils.getInput(normal_bqr_tsv, meta, Constants.INPUT.REDUX_BQR_TSV_NORMAL),
-                normal_jitter_tsv ?: Utils.getInput(normal_jitter_tsv, meta, Constants.INPUT.REDUX_JITTER_TSV_NORMAL),
-                normal_ms_tsv ?: Utils.getInput(normal_ms_tsv, meta, Constants.INPUT.REDUX_MS_TSV_NORMAL),
+                normal_bqr_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_BQR_TSV_NORMAL),
+                normal_jitter_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_JITTER_TSV_NORMAL),
+                normal_ms_tsv ?: Utils.getInput(meta, Constants.INPUT.REDUX_MS_TSV_NORMAL),
             ]
 
             tumor_redux_tsvs = tumor_redux_tsvs.findAll { it -> it != [] }
@@ -84,7 +84,7 @@ workflow QSEE_METRICS {
                 tumor_id: Utils.getTumorDnaSampleName(meta),
             ]
 
-            if (inputs.redux_tsvs_normal || inputs.bamtools_normal_dir) {
+            if (normal_redux_tsvs || bamtools_normal_dir) {
                 meta_qsee.normal_id = Utils.getNormalDnaSampleName(meta)
             }
 
